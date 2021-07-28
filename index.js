@@ -1,3 +1,6 @@
+const serveStatic = require('serve-static')
+const AdmZip = require('adm-zip')
+const fs = require('fs')
 const bcrypt = require('bcrypt')
 const mongoose = require('mongoose')
 const express = require('express')
@@ -38,6 +41,7 @@ mongoose.connect(url,connectionParams)
     })
 
 const FileSchema = new mongoose.Schema({
+    owner: String,
     name: String,
     type: {
         type: String,
@@ -67,29 +71,26 @@ const UsersSchema = new mongoose.Schema({
     password: String,
     name: String,
     age: Number,
-    moneys:{
-        type: Number,
-        default: 0
-    },
-    productsInBucket:[mongoose.Schema.Types.Map]
 },
 { collection : 'myusers' });
 const UsersModel = mongoose.model('UsersModel', UsersSchema, 'myusers');
 
-app.get('/home',(req, res)=>{
+app.use('/', serveStatic(path.join(__dirname, '/dist')))
+
+app.get('/home', (req, res)=>{
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
     
     //получение всех файлов
-    let queryOfFiles = FileModel.find({})
+    let queryOfFiles = FileModel.find({ owner: req.query.useremail })
     queryOfFiles.exec((err, allFiles) => {
         if (err){
             return
         }
         // return res.render('index', { allFiles: allFiles, auth: true, useremail: 'gleb@mail.ru' })
-        return res.json({ allFiles: allFiles, auth: "true", useremail: 'gleb@mail.ru' })
+        return res.json({ allFiles: allFiles, auth: "true", useremail: req.query.useremail })
     })
     
 })
@@ -115,13 +116,47 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
         } else if(file.mimetype.includes("audio")){
             fileType = "mp3"
         }
-        await new FileModel({ name: file.filename, size: file.size, type: fileType, path: req.query.filepath }).save(function (err) {
+        await new FileModel({ name: file.filename, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
             if(err){
                 return res.json({ "status": "error" })
             }
         })
     }
-    return res.redirect('http://localhost:8080/')
+    return res.redirect(`https://upcload.herokuapp.com/?path=${req.query.filepath}`)
+})
+
+app.get('/files/delete', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+
+    let fileids = req.query.fileids.split(',')
+    let countOfFiles = fileids.length
+    console.log('fileids: ', fileids)
+        for(let fileIndex = 0; fileIndex < countOfFiles; fileIndex++){
+            let queryOfFile = FileModel.findOne({ "_id": fileids[fileIndex] })
+            queryOfFile.exec((err, file) => {
+                if(!file.type.includes('group')){
+                    console.log("file: ", file)
+                    if(err){
+                        return res.json({ 'status': 'error' })
+                    }
+                    fs.unlink(`uploads/${file.name}`, (err) => {
+                        if(err) {
+                            return res.json({ 'status': 'error' })
+                        }
+                    })  
+                }
+            })
+        }
+        let query = FileModel.find({ })
+        query.exec((err, allFiles) => {
+            let queryOfDelete = FileModel.deleteMany({ "_id": { $in: fileids } })
+            queryOfDelete.exec((err, data) => {
+                return res.json({ allFiles: allFiles })
+            })
+    })
 })
 
 app.get('/files/createfolder', (req,res)=>{
@@ -130,7 +165,7 @@ app.get('/files/createfolder', (req,res)=>{
     res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
 
-    new FileModel({ name: req.query.filename, size: 0, type: "group", path: req.query.filepath }).save(function (err) {
+    new FileModel({ name: req.query.filename, size: 0, type: "group", path: req.query.filepath, owner: req.query.owner }).save(function (err) {
         if(err){
             return res.json({ "status": "error" })
         }
@@ -139,70 +174,51 @@ app.get('/files/createfolder', (req,res)=>{
 })
 
 app.get('/users/check', (req,res)=>{
-    //let query =  UsersModel.find({}).select(['email']);
-    let query =  UsersModel.findOne({'email': req.query.useremail}, function(err, user){
-        if (err){
-            return
+    
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    
+    let query =  UsersModel.findOne({ 'email': req.query.useremail })
+    query.exec((err, user) => {
+        if (err || user === null || user === undefined){
+            return res.json({ 'status': "Error" })
         } else {
-            if(user != null && user != undefined && req.query.userpassword == user.password){
-                auth = true
-                res.redirect(`/?useremail=${user.email}&error=no`)
+            let loginCheck = req.query.useremail === user.email
+            let passwordCheck = bcrypt.compareSync(req.query.userpassword, user.password) && req.query.userpassword !== ''
+            if(user !== null && user !== undefined && loginCheck && passwordCheck){
+                return res.json({ 'status': "OK" })
             } else {
-                res.send(`user not found`)    
+                return res.json({ 'status': "error" })
             }
-            console.log(user)
-            
         }
     })
-    // query.exec((err, allUsers) => {
-    //     if (err){
-    //         return
-    //     }
-    //     console.log(req.query)
-    //     console.log(allUsers)
-        /*
-        allUsers.map((user) => {
-            if(user.email && user.email == req.query.useremail){
-                auth = true
-                res.redirect(`/?useremail=${req.query.useremail}&error=no`)
-            }
-            else {
-                res.redirect(`/?error=notAuth`)
-            }
-        })
-        */
-       
-        // if(req.query.useremail in allUsers){
-            // auth = true
-            // res.redirect(`/?useremail=${req.query.useremail}&error=no`)
-        // } else {
-            // res.redirect(`/?error=notAuth`)
-        // }
-            
-    // });
 })
-app.get('/users/usercreatesuccess',async (req, res)=>{
-    //let query = await UsersModel.create({ email: 'rodion@mail.ru', password:req.params.userpassword.toString(), name:req.params.username, age:req.params.userage });
-    let query = UsersModel.find({}).select(['email']);
+app.get('/users/usercreatesuccess', async (req, res)=>{
+    
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+
+    let query = UsersModel.find({})
     query.exec(async (err, allUsers) => {
         if (err){
-            return
+            return res.json({ 'status': "error" })
         }
-        
         if(req.query.useremail in allUsers){
-            console.log(req.query.useremail in allUsers)
-            res.redirect('/users/register',{ userlogin:true}) 
+            return res.json({ 'status': "error" })
         } else {
-            const user = await new UsersModel({ email: req.query.useremail, password:req.query.userpassword, name:req.query.username, age:req.query.userage });
+            let encodedPassword = "#"
+            encodedPassword = bcrypt.hashSync(req.query.userpassword, 10)
+
+            const user = await new UsersModel({ email: req.query.useremail, password: encodedPassword, name:req.query.username, age:req.query.userage });
             user.save(function (err) {
                 if(err){
-                    return
+                    return res.json({ 'status': "error" })
                 } else {
-                    //localStorage.setItem('logined', 'true')
-                    // res.redirect('/users/register')
-                    //res.redirect(`/users/usercreatesuccess?useremail=${useremail}&userpassword=${userpassword}&username=${username}&userage=${userage}`)
-                    auth = true
-                    res.render('usercreatesuccess', {userlogin: true, useremail: req.query.useremail})
+                    return res.json({ 'status': "OK" })
                 }
             });
         }
@@ -233,18 +249,27 @@ app.get('/files/generatelink', async (req, res)=>{
             "link": encodedLink
         }
     })
+    query.exec((err, file) => {
+        if(err){
+            return res.json({ 'status': "error" })
+        }
+        return res.json({ 'status': "OK" })
+    })
 })
 
 
-app.get('/games/getpreview', (req, res)=>{
+app.get('/files/getpreview', (req, res)=>{
         
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
     
-    res.sendFile(__dirname + `/uploads/${req.query.previewname}.png`)
-
+    if(req.query.filetype.includes("mp4") || req.query.filetype.includes("img") || req.query.filetype.includes("mp3")){
+        res.sendFile(__dirname + `/uploads/${req.query.previewname}`)
+    }else if(req.query.filetype.includes("txt")){
+        
+    }
 })
 
 app.get('/files/downloads', (req, res)=>{
@@ -254,20 +279,62 @@ app.get('/files/downloads', (req, res)=>{
     res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type, Accept, Origin");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
 
-    let query = FileModel.findOne({'name': req.query.filename }, async function(err, game){
-        console.log("path to file", path.join(__dirname, `uploads/${req.query.filename}.txt`))
-        await res.download(path.join(__dirname, `uploads/${req.query.filename}.txt`), `${req.query.filename}.txt`, function (err) {
-            if (err) {
-                //error to download file
-                return res.json({ "status": "error to download file" })
-            } else {
-                //file success download
-                return res.json({ "status": "file success download" })
-            }
-        })
+    let query = FileModel.findOne({'name': req.query.filename }, async function(err, file){
+        if(!file.type.includes("group")){
+            console.log("path to file", path.join(__dirname, `uploads/${req.query.filename}`))
+            await res.download(path.join(__dirname, `uploads/${req.query.filename}`), `${req.query.filename}`, function (err) {
+                if (err) {
+                    //error to download file
+                    return res.json({ "status": "error to download file" })
+                } else {
+                    //file success download
+                    return res.json({ "status": "file success download" })
+                }
+            })
+        } else if(file.type.includes("group")){
+            let zip = new AdmZip()
+            let queryOfFiles = FileModel.find({ 'path': req.query.filepath })
+            let filesPaths = []
+            queryOfFiles.exec(async (err, files) => {
+                files.map(file => {
+                    if(!file.type.includes("group")){
+                        filesPaths.push(`./uploads/${file.name}`)
+                    }
+                })
+                console.log('filesPaths: ', filesPaths)
+                filesPaths.map(path => {
+                    // let p = fs.stat(path);
+                    // if (path.isFile()) {
+                    //     zip.addLocalFile(path)
+                    // } else if (path.isDirectory()) {
+                    //     zip.addLocalFolder(path, path)
+                    // }
+                    zip.addLocalFile(path)
+                })
+                zip.writeZip(`./uploads/${req.query.filename}.zip`)
+                console.log("startPath: ", path.join(__dirname, path.sep + 'uploads') + path.sep + "temp.zip")
+                console.log("endPath: ", path.join(__dirname,  path.sep + 'uploads') + path.sep + req.query.filename + ".zip")
+                fs.rename(path.join(__dirname, path.sep + "uploads") + path.sep + "temp.zip", path.join(__dirname, path.sep + "uploads") + path.sep + req.query.filename + ".zip", function (err) {
+                    if (err) {
+                    
+                    }
+
+                })
+                // return res.redirect(`http://localhost:8080/?path=${req.query.filepath}`)
+                await res.download(path.join(__dirname, `uploads/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
+                    if (err) {
+                        //error to download file
+                        return res.json({ "status": "error to download file" })
+                    } else {
+                        //file success download
+                        return res.json({ "status": "file success download" })
+                    }
+                })
+            })
+        }
     })
 })
 
 const port = process.env.PORT || 8080
-
-app.listen(4000)
+// const port = 4000
+app.listen(port)

@@ -1,13 +1,30 @@
 <template>
-  <div id="app">
-    <p style="cursor: pointer; font-size: 24px; color: rgb(215, 215, 215)" @click="previousFolder()">..</p>
-    <p style="font-size: 24px; color: rgb(215, 215, 215)">{{ path }}</p>
+  <div class="app">
+    <Header/>
+    <!-- возможно файлы не до конца принадлежит определенному пользователю -->
+    <!-- <object class="object" data="https://mercurial-diagnostic-glazer.glitch.me/pictures/getpicture?picturename=gleb" width="400" height="300">{{ content }}</object> -->
+    <!-- <iframe class="object" src="./main.txt" width="468" height="60" align="left">
+      Ваш браузер не поддерживает плавающие фреймы!
+    </iframe> -->
+    <p v-if="path !== 'root'" style="margin-left: 35px; display: inline; cursor: pointer; font-size: 24px; color: rgb(165, 165, 165); font-weight: bold;" @click="previousFolder()">..</p>&nbsp;
+    <p style="display: inline; font-size: 24px; color: rgb(165, 165, 165)">{{ path }}</p>
     <div v-if="allFiles !== null && allFiles.length !== 0">
       <div v-for="file in allFiles">
         <input data-selected="false" type="hidden" :value="file._id">
-        <div @dblclick="changePath(file.name, file.type)" @click="expandSelect($event)" class="card" style="cursor: pointer; float: left; margin: 5px;">
-          <h5 class="card-header">
-            <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" />
+        <div @dblclick="changePath($event, file.name, file.type)" @click="expandSelect($event, file.name)" class="card" style="cursor: pointer; float: left; margin: 5px; width: 350px;  height: 250px; ">
+          <h5 class="card-header" style="overflow: hidden;">
+            <!-- <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" /> -->
+            <div v-if="file.type.includes('img')">
+              <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}`" style="width: 100%; height: 100%;">
+            </div>
+            <div v-else-if="file.type.includes('mp4')">
+              <video autoplay loop style="width: 100%; height: 100%;" controls>
+                <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}`"/>
+              </video>
+            </div>
+            <div v-else-if="file.type.includes('mp3')">
+              <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}`" controls></audio>
+            </div>
             <p>{{ Math.floor(file.size / 1024) }} Кб</p>
           </h5>
           <div class="card-body" style="min-height: 125px;">
@@ -38,10 +55,10 @@
       </div>
     </div>
     <div v-else-if="allFiles !== null && allFiles.length === 0">
-      <p style="text-align: center; font-size: 24px; color: rgb(215, 215, 215)">Вы не загрузили ещё ни 1 файл.</p>
+      <p @click="expandSelect($event, 'mockFileName')" style="cursor: pointer; text-align: center; font-size: 24px; color: rgb(215, 215, 215)">Вы не загрузили ещё ни 1 файл.</p>
     </div>
     <br style="clear: both;"/>
-    <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`http://localhost:4000/files/upload/?filepath=${path}`">
+    <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`https://confirmed-giant-utahraptor.glitch.me/files/upload/?filepath=${path}&owner=${useremail}`">
       <input style="display: none;" id="filename" type="text" name="name" />
       <input style="display: none;" id="filesize" type="number" name="size" />
       <input style="display: none;" id="filetype" type="text" name="type" />
@@ -50,15 +67,17 @@
       </label>
       <input accept="image/png, audio/mpeg, video/mp4" name="myFiles" ref="fileUploader" @change="uploadFiles($event)" style="display: none;" id="fileuploader" type="file" multiple />
     </form>
-    <p class="mt-5 mb-3 text-muted">© {{ new Date().toLocaleDateString() }}</p> 
-    <div @drop.prevent="drop_handler($event)" @dragover="dragover_handler($event)" @click="clearSelection($event)" class="workSpace" style="width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: red; z-index: -5;"></div>
+    <Footer/>
+    <div @drop.prevent="drop_handler($event)" @dragover="dragover_handler($event)" @click="clearSelection($event)" class="workSpace" style="width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: -5;"></div>
     <div class="createFolderModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
       <div class="alert alert-primary" role="alert" style="min-width: 550px;">
         <span @click="closeModal($event)" style=" font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
           cancel
         </span>
         <input v-model="folderName" style="max-width: 200px; margin: auto;" type="text" class="form-control" id="folderName" aria-describedby="folderName">
-        <button style="margin: auto;" @click="createFolder()" class="btn btn-primary" type="button">Создать папку</button>
+        <div style="width: 100%; display: flex;">
+          <button style="margin: 5px auto;" @click="createFolder()" class="btn btn-primary" type="button">Создать папку</button>
+        </div>
       </div>
     </div>
     <div class="fileModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
@@ -66,7 +85,29 @@
         <span @click="closeModal($event)" style=" font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
           cancel
         </span>
-        A simple primary alert with <a href="#" class="alert-link">an example link</a>. Give it a click if you like.
+        <h2>
+          {{ currentOpenFile.name }}
+        </h2>
+        
+          <div v-if="currentOpenFile.type.includes('img')" style="display: flex; justify-content: center;">
+            <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}`" style="width: 50%; height: 100%;">
+          </div>
+          <div v-else-if="currentOpenFile.type.includes('mp4')" style="display: flex; justify-content: center;">
+            <video autoplay loop style="width: 50%; height: 100%;" controls>
+              <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}`"/>
+            </video>
+          </div>
+          <div v-else-if="currentOpenFile.type.includes('mp3')" style="display: flex; justify-content: center;">
+            <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}`" controls></audio>
+          </div>
+        
+        
+        <p>
+          Расположение файла: {{ currentOpenFile.path }}
+        </p>
+        <p>
+          Задана ссылка: {{ currentOpenFile.linked }}
+        </p>
       </div>
     </div>
     <div class="fileLinkModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
@@ -74,8 +115,8 @@
         <span @click="closeModal($event)" style=" font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
           cancel
         </span>
-        Сгенерировать ссылку<br/>
-        <a type="text" href="https://google.com">https://google.com</a>
+        Сгенерировать ссылка<br/>
+        <a :href="currentOpenFile.link">{{ currentOpenFile.link }}</a>
       </div>
     </div>
     <div class="filePropsModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
@@ -83,7 +124,21 @@
         <span @click="closeModal($event)" style=" font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
           cancel
         </span>
-        <p>Размер файла: 256 Гб</p>
+        <h2>
+          Название файла: {{ currentOpenFile.name }}
+        </h2>
+        <p>
+          Размер файла: {{ Math.floor(currentOpenFile.size / 1024 / 1024) }} Мб
+        </p>
+        <p>
+          Расположение файла: {{ currentOpenFile.path }}
+        </p>
+        <p>
+          Расширение файла: {{ currentOpenFile.type }}
+        </p>
+        <p>
+          Задана ссылка: {{ currentOpenFile.linked }}
+        </p>
         <p>Последний раз обновлен {{ new Date().toLocaleDateString() }}.</p>
       </div>
     </div>
@@ -91,6 +146,9 @@
 </template>
 
 <script>
+import * as jwt from 'jsonwebtoken'
+import Footer from '@/components/Footer.vue'
+import Header from '@/components/Header.vue'
 
 export default {
   name: 'Home',
@@ -108,42 +166,60 @@ export default {
         "Свойства"
       ],
       path: "root/",
-      folderName: ''
+      folderName: '',
+      content: '',
+      propsFileSize: 0,
+      propsFileUpdated: Date.now,
+      currentOpenFile: {
+        type: 'img'
+      },
+      token: '',
+      useremail: ''
     }
   },
   mounted(){
-    if(this.$route.query.path !== null && this.$route.query.path !== undefined){
-      this.path = this.$route.query.path
-    } else {
-      this.path = 'root'
-    }
-    
-    fetch(`http://localhost:4000/home/`, {
-      mode: 'cors',
-      method: 'GET'
-    }).then(response => response.body).then(rb  => {
-        const reader = rb.getReader()
-        return new ReadableStream({
-        start(controller) {
-            function push() {
-            reader.read().then( ({done, value}) => {
-                if (done) {
-                    console.log('done', done);
-                    controller.close();
-                    return;
-                }
-                controller.enqueue(value);
-                console.log(done, value);
-                push();
-            })
-            }
-            push();
-        }
-        });
-    }).then(stream => {
+    this.token = window.localStorage.getItem("upcloadsecret")
+    jwt.verify(this.token, 'upcloadsecret', (err, decoded) => {
+      if(err){
+        this.$router.push({ name: 'UsersLogin' })
+      }
+      this.useremail = decoded.useremail
+      document.body.addEventListener("keyup", (event) => {
+        this.showFileModal(event, false)
+      })
+
+      if(this.$route.query.path !== null && this.$route.query.path !== undefined){
+        this.path = this.$route.query.path
+      } else {
+        this.path = 'root'
+      }
+      
+      fetch(`https://upcload.herokuapp.com/home/?useremail=${decoded.useremail}`, {
+        mode: 'cors',
+        method: 'GET'
+      }).then(response => response.body).then(rb  => {
+          const reader = rb.getReader()
+          return new ReadableStream({
+          start(controller) {
+              function push() {
+              reader.read().then( ({done, value}) => {
+                  if (done) {
+                      console.log('done', done);
+                      controller.close();
+                      return;
+                  }
+                  controller.enqueue(value);
+                  console.log(done, value);
+                  push();
+              })
+              }
+              push();
+          }
+          });
+      }).then(stream => {
         return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
-    })
-    .then(result => {
+      })
+      .then(result => {
         console.log(JSON.parse(result))
         this.allFiles = JSON.parse(result).allFiles.filter(file => {
           if(this.$route.query.path !== null && this.$route.query.path !== undefined){
@@ -158,9 +234,25 @@ export default {
             return false
           }
         })
-    });
+      });
+    })
   },
   methods: {
+    showFileModal(event, free){
+      if(this.selection.length >= 1 && ((event.code == 'NumpadEnter' || event.code == 'Enter') || free)){
+        document.querySelector('.fileModal').style.display = `flex`
+        this.currentOpenFile = this.allFiles.filter(file => {
+          if(file._id === this.selection[0]){
+            return true
+          }
+          return false
+        })[0]
+        console.log("this.currentOpenFile: ", this.currentOpenFile)
+      }
+    },
+    download(event, fileName){
+      window.location = `https://confirmed-giant-utahraptor.glitch.me/files/downloads/?filename=${fileName}&filepath=${this.path + '/' + fileName}`
+    },
     previousFolder(){
       let previousDir = this.path.split('/')
       previousDir.pop()
@@ -168,7 +260,7 @@ export default {
       window.location.reload()
     },
     createFolder(){
-      fetch(`http://localhost:4000/files/createfolder/?filename=${this.folderName}&filepath=${this.path}`, {
+      fetch(`https://upcload.herokuapp.com/files/createfolder/?filename=${this.folderName}&filepath=${this.path}&owner=${this.useremail}`, {
         mode: 'cors',
         method: 'GET'
       }).then(response => response.body).then(rb  => {
@@ -199,21 +291,23 @@ export default {
           window.location.reload()
         });
     },
-    changePath(folderName, fileType){
+    changePath(event, folderName, fileType){
       if(fileType.includes("group")){
         this.$router.push({ name: 'Home', query:{ path: `${this.path}/${folderName}` } })
         window.location.reload()
+      } else if(!fileType.includes("group")){
+        this.showFileModal(event, true)
       }
     },
     uploadFiles(event) {
       // action="http://localhost:8080/files/upload/?filename=group&filetype=group&filesize=256"
-      if(event.target.files[0].type.includes("img")){
-          fileType = "img"
-      } else if(event.target.files[0].type.includes("mp4")){
-          fileType = "mp4"
-      } else if(event.target.files[0].type.includes("mp3")){
-          fileType = "mp3"
-      }
+      // if(event.target.files[0].type.includes("img")){
+      //     fileType = "img"
+      // } else if(event.target.files[0].type.includes("mp4")){
+      //     fileType = "mp4"
+      // } else if(event.target.files[0].type.includes("mp3")){
+      //     fileType = "mp3"
+      // }
       document.querySelector('.formOfUploadedFiles').method = "POST"
       // document.querySelector('.formOfUploadedFiles').action = `http://localhost:8080/files/upload/?filename=${event.target.files[0].name}&filetype=${fileType}&filesize=${event.target.files[0].size}`
       // document.querySelector('.formOfUploadedFiles').setAttribute("action", `http://localhost:8080/files/upload/?filename=${event.target.files[0].name}&filetype=${fileType}&filesize=${event.target.files[0].size}`)
@@ -250,7 +344,7 @@ export default {
       document.querySelector('.formOfUploadedFiles').method = "POST"
       document.querySelector('.formOfUploadedFiles').submit()
     },
-    expandSelect(event){
+    expandSelect(event, fileName){
       if(!event.shiftKey){
         if(event.target.parentNode.previousElementSibling.getAttribute('data-selected').includes("false")){
           //добавляем выделение
@@ -263,7 +357,7 @@ export default {
             this.selection = []
           }
           event.target.parentNode.classList += ` text-white bg-info`
-          event.target.parentNode.style = `margin: 5px; border: 1px solid rgb(190, 190, 190); display: inline-block; border-radius: 5px; float: left;`
+          event.target.parentNode.style = `cursor: pointer; margin: 5px; border: 1px solid rgb(190, 190, 190); border-radius: 5px; float: left;  width: 350px;  height: 250px;`
           event.target.parentNode.previousElementSibling.setAttribute('data-selected', "true")
           this.selection.push(event.target.parentNode.previousElementSibling.value)
         } else if(event.target.parentNode.previousElementSibling.getAttribute('data-selected').includes("true")){
@@ -297,7 +391,7 @@ export default {
     } catch(e) {
       console.log('не могу удалить, потому что не существует окно')
     }
-    if(this.selection.length >= 1){
+    if(this.selection.length >= 1 || this.allFiles.length <= 0){
       this.contextWindow = document.createElement("div")
       this.contextWindow.classList += "contextMenu"
       this.contextWindow.style = `
@@ -306,8 +400,8 @@ export default {
         background-color: rgb(245, 245, 245);
         border: 1px solid rgb(125, 125, 125);
         position: absolute;
-        top: ${event.y}px;
-        left: ${event.x}px;
+        top: ${event.pageY}px;
+        left: ${event.pageX}px;
         box-sizing: border-box;
         padding: 15px;
       `
@@ -318,21 +412,17 @@ export default {
                     cursor: pointer;
                 `
                 
-                menuItemTool.addEventListener("click", function(event){
+                menuItemTool.addEventListener("click", (event) => {
                     console.log('event.target: ', event.target.textContent)
                     if(event.target.textContent.includes("Открыть")){
-                      document.querySelector('.fileModal').style.display = `flex`
+                      this.showFileModal(event, true)
                     } else if(event.target.textContent.includes("Создать папку")){
                       document.querySelector('.createFolderModal').style.display = `flex`
                     } else if(event.target.textContent.includes("Открыть")){
 
                     } else if(event.target.textContent.includes("Удалить")){
-
-                    } else if(event.target.textContent.includes("Скачать")){
-                        download(event, "efj")
-                    } else if(event.target.textContent.includes("Сделать ссылкой")){
-                        document.querySelector('.fileLinkModal').style.display = `flex`
-                        fetch(`http://localhost:4000/files/generatelink/?fileid=${this.selection[0]}`, {
+                      console.log('this.selection.join(,): ', this.selection.join(','))
+                      fetch(`https://upcload.herokuapp.com/files/delete/?fileids=${this.selection.join(',')}`, {
                           mode: 'cors',
                           method: 'GET'
                         }).then(response => response.body).then(rb  => {
@@ -358,10 +448,61 @@ export default {
                             return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
                         })
                         .then(result => {
-                            console.log(JSON.parse(result))
-                            this.allFiles = JSON.parse(result).allFiles
+                          console.log(JSON.parse(result))
+                          window.location.reload()
+                          this.allFiles = JSON.parse(result).allFiles.filter(file => {
+                          if(file.path === this.path){
+                            return true
+                          } else if(this.path !== file.path){
+                            return false
+                          }
+                        });
+                      })
+                    } else if(event.target.textContent.includes("Скачать")){
+                      this.download(event, fileName)
+                    } else if(event.target.textContent.includes("Сделать ссылкой")){
+                        document.querySelector('.fileLinkModal').style.display = `flex`
+                        this.currentOpenFile = this.allFiles.filter(file => {
+                          if(this.selection[0] === file._id){
+                            return true
+                          }
+                          return false
+                        })
+                        fetch(`https://upcload.herokuapp.com/files/generatelink/?fileid=${this.selection[0]}`, {
+                          mode: 'cors',
+                          method: 'GET'
+                        }).then(response => response.body).then(rb  => {
+                            const reader = rb.getReader()
+                            return new ReadableStream({
+                            start(controller) {
+                                function push() {
+                                reader.read().then( ({done, value}) => {
+                                    if (done) {
+                                        console.log('done', done);
+                                        controller.close();
+                                        return;
+                                    }
+                                    controller.enqueue(value);
+                                    console.log(done, value);
+                                    push();
+                                })
+                                }
+                                push();
+                            }
+                            });
+                        }).then(stream => {
+                            return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+                        })
+                        .then(result => {
+                          // window.location.reload()  
                         });
                     } else if(event.target.textContent.includes("Свойства")){
+                        this.currentOpenFile = this.allFiles.filter((file) => {
+                          if(file._id === this.selection[0]){
+                            return true
+                          }
+                          return false
+                        })[0]
                         document.querySelector('.filePropsModal').style.display = `flex`
                     }
 
@@ -372,16 +513,27 @@ export default {
           }
         }
     }
-  }  
+  },
+  components: {
+    Footer,
+    Header
+  }
 }
 
-function drop_handler(event){
-  event.preventDefault()
-  console.log("drop_handler")
-  console.log("event: ", this.$event)
-  console.log("event.dataTransfer.items: ", this.$event.dataTransfer.items)
-  console.log("event.dataTransfer: ", this.$event.dataTransfer)
-  document.querySelector('.formOfUploadedFiles').method = "POST"
-  document.querySelector('.formOfUploadedFiles').submit()
-}
+// function drop_handler(event){
+//   event.preventDefault()
+//   console.log("drop_handler")
+//   console.log("event: ", this.$event)
+//   console.log("event.dataTransfer.items: ", this.$event.dataTransfer.items)
+//   console.log("event.dataTransfer: ", this.$event.dataTransfer)
+//   document.querySelector('.formOfUploadedFiles').method = "POST"
+//   document.querySelector('.formOfUploadedFiles').submit()
+// }
 </script>
+<style scoped>
+  .plate {
+    width: 100%;
+    height: 100%;
+    background-color: rgb(255, 255, 255);
+  }
+</style>
