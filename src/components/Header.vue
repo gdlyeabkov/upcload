@@ -4,10 +4,10 @@
         <a class="navbar-brand" href="#">Upcload</a>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-                <a style="cursor: pointer;" @click="goToPage('home')" class="nav-link active" aria-current="page">Домой</a>
-                <a style="cursor: pointer;" @click="goToPage('register')" class="nav-link active" aria-current="page">Регистрация</a>
-                <a style="cursor: pointer;" @click="goToPage('login')" class="nav-link active" aria-current="page">Авторизация</a>
-                <a style="cursor: pointer;" @click="goToPage('login')" class="nav-link active" aria-current="page">Выйти</a>
+                <a v-if="auth" style="cursor: pointer;" @click="goToPage('home')" class="nav-link active" aria-current="page">Домой</a>
+                <a v-if="!auth" style="cursor: pointer;" @click="goToPage('register')" class="nav-link active" aria-current="page">Регистрация</a>
+                <a v-if="!auth" style="cursor: pointer;" @click="goToPage('login')" class="nav-link active" aria-current="page">Авторизация</a>
+                <a v-if="auth" style="cursor: pointer;" @click="goToPage('login')" class="nav-link active" aria-current="page">Выйти</a>
             </div>
         </div>
         </div>
@@ -15,6 +15,7 @@
 </template>
 <script>
 export default {
+    props: ["auth"],
     methods: {
         logout(){
             this.token = jwt.sign({

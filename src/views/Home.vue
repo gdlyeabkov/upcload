@@ -1,6 +1,6 @@
 <template>
   <div class="app">
-    <Header/>
+    <Header :auth="true"/>
     <!-- возможно файлы не до конца принадлежит определенному пользователю -->
     <!-- <object class="object" data="https://mercurial-diagnostic-glazer.glitch.me/pictures/getpicture?picturename=gleb" width="400" height="300">{{ content }}</object> -->
     <!-- <iframe class="object" src="./main.txt" width="468" height="60" align="left">
@@ -180,61 +180,71 @@ export default {
   mounted(){
     this.token = window.localStorage.getItem("upcloadsecret")
     jwt.verify(this.token, 'upcloadsecret', (err, decoded) => {
-      if(err){
-        this.$router.push({ name: 'UsersLogin' })
-      }
-      this.useremail = decoded.useremail
-      document.body.addEventListener("keyup", (event) => {
-        this.showFileModal(event, false)
-      })
-
-      if(this.$route.query.path !== null && this.$route.query.path !== undefined){
-        this.path = this.$route.query.path
-      } else {
-        this.path = 'root'
-      }
-      
-      fetch(`https://upcload.herokuapp.com/home/?useremail=${decoded.useremail}`, {
-        mode: 'cors',
-        method: 'GET'
-      }).then(response => response.body).then(rb  => {
-          const reader = rb.getReader()
-          return new ReadableStream({
-          start(controller) {
-              function push() {
-              reader.read().then( ({done, value}) => {
-                  if (done) {
-                      console.log('done', done);
-                      controller.close();
-                      return;
-                  }
-                  controller.enqueue(value);
-                  console.log(done, value);
-                  push();
-              })
-              }
-              push();
-          }
-          });
-      }).then(stream => {
-        return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
-      })
-      .then(result => {
-        console.log(JSON.parse(result))
-        this.allFiles = JSON.parse(result).allFiles.filter(file => {
-          if(this.$route.query.path !== null && this.$route.query.path !== undefined){
-            if(file.path === this.$route.query.path){
-              return true
-            }
-            return false
-          } else if(this.$route.query.path === null || this.$route.query.path === undefined){
-            if('root' === file.path){
-              return true
-            }
-            return false
-          }
+      if(this.$route.query.redirectroute !== null && this.$route.query.redirectroute !== undefined){
+        // логика перенаправления
+        if(this.$route.query.redirectroute.includes('users/login') || this.$route.query.redirectroute.includes('users/register')){
+          this.$router.push({ path: this.$route.query.redirectroute })
+        } else if(!this.$route.query.redirectroute.includes('users/login') && !this.$route.query.redirectroute.includes('users/register')){
+          this.$router.push({ name: "Home", query: { useremail: decoded.useremail, path: 'root' } })
+        }
+      } else { 
+        // логика домашней страницы
+        if(err){
+          this.$router.push({ name: 'UsersLogin' })
+        }
+        this.useremail = decoded.useremail
+        document.body.addEventListener("keyup", (event) => {
+          this.showFileModal(event, false)
         })
-      });
+
+        if(this.$route.query.path !== null && this.$route.query.path !== undefined){
+          this.path = this.$route.query.path
+        } else {
+          this.path = 'root'
+        }
+        
+        fetch(`https://upcload.herokuapp.com/home/?useremail=${decoded.useremail}`, {
+          mode: 'cors',
+          method: 'GET'
+        }).then(response => response.body).then(rb  => {
+            const reader = rb.getReader()
+            return new ReadableStream({
+            start(controller) {
+                function push() {
+                reader.read().then( ({done, value}) => {
+                    if (done) {
+                        console.log('done', done);
+                        controller.close();
+                        return;
+                    }
+                    controller.enqueue(value);
+                    console.log(done, value);
+                    push();
+                })
+                }
+                push();
+            }
+            });
+        }).then(stream => {
+          return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+        })
+        .then(result => {
+          console.log(JSON.parse(result))
+          this.allFiles = JSON.parse(result).allFiles.filter(file => {
+            if(this.$route.query.path !== null && this.$route.query.path !== undefined){
+              if(file.path === this.$route.query.path){
+                return true
+              }
+              return false
+            } else if(this.$route.query.path === null || this.$route.query.path === undefined){
+              if('root' === file.path){
+                return true
+              }
+              return false
+            }
+          })
+        });
+      }
     })
   },
   methods: {
@@ -422,7 +432,7 @@ export default {
 
                     } else if(event.target.textContent.includes("Удалить")){
                       console.log('this.selection.join(,): ', this.selection.join(','))
-                      fetch(`https://upcload.herokuapp.com/files/delete/?fileids=${this.selection.join(',')}`, {
+                      fetch(`https://upcload.herokuapp.com/files/delete/?fileids=${this.selection.join(',')}&owner=${this.useremail}`, {
                           mode: 'cors',
                           method: 'GET'
                         }).then(response => response.body).then(rb  => {

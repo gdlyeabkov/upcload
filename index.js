@@ -135,7 +135,7 @@ app.get('/files/delete', (req, res) => {
     let countOfFiles = fileids.length
     console.log('fileids: ', fileids)
         for(let fileIndex = 0; fileIndex < countOfFiles; fileIndex++){
-            let queryOfFile = FileModel.findOne({ "_id": fileids[fileIndex] })
+            let queryOfFile = FileModel.findOne({"_id": fileids[fileIndex] })
             queryOfFile.exec((err, file) => {
                 if(!file.type.includes('group')){
                     console.log("file: ", file)

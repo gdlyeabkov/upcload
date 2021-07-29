@@ -1,6 +1,6 @@
 <template>
   <div style=" background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: -5; min-height: 750px;">
-    <Header />
+    <Header :auth="false"/>
     <div class="customCardGroup">
       <img src="https://www.gstatic.com/android/market_images/web/play_prism_hlock_2x.png" width="30%" height="30%" alt="">
       <h1 class="h3 mb-3 font-weight-normal">Войдите</h1>
