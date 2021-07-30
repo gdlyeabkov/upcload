@@ -226,8 +226,12 @@ app.get('/users/usercreatesuccess', async (req, res)=>{
                 if(err){
                     return res.json({ 'status': "error" })
                 } else {
-                    fs.mkdir(`/uploads/${req.query.useremail.split('@')[0]}`)
-                    return res.json({ 'status': "OK" })
+                    fs.mkdir(`./uploads/${req.query.useremail.split('@')[0]}`, (err, dir) => {
+                        if(err){
+                            return res.json({ 'status': "error" })
+                        }
+                        return res.json({ 'status': "OK" })
+                    })
                 }
             });
         }
@@ -344,6 +348,6 @@ app.get('/files/downloads', (req, res)=>{
     })
 })
 
-const port = process.env.PORT || 8080
-// const port = 4000
+// const port = process.env.PORT || 8080
+const port = 4000
 app.listen(port)
