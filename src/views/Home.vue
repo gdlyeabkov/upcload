@@ -11,7 +11,7 @@
     <div v-if="allFiles !== null && allFiles.length !== 0">
       <div v-for="file in allFiles">
         <input data-selected="false" type="hidden" :value="file._id">
-        <div @dblclick="changePath($event, file.name, file.type)" @click="expandSelect($event, file.name)" class="card" style="cursor: pointer; float: left; margin: 5px; width: 350px;  height: 250px; ">
+        <div @contextmenu="expandSelect($event, file.name, 'right')" @dblclick="changePath($event, file.name, file.type)" @click="expandSelect($event, file.name, 'left')" class="card" style="cursor: pointer; float: left; margin: 5px; width: 350px;  height: 250px; ">
           <h5 class="card-header" style="overflow: hidden;">
             <!-- <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" /> -->
             <div v-if="file.type.includes('img')">
@@ -193,6 +193,9 @@ export default {
           this.$router.push({ name: 'UsersLogin' })
         }
         this.useremail = decoded.useremail
+        window.addEventListener("contextmenu", (event) => {
+          event.preventDefault()
+        })
         document.body.addEventListener("keyup", (event) => {
           this.showFileModal(event, false)
         })
@@ -354,8 +357,8 @@ export default {
       document.querySelector('.formOfUploadedFiles').method = "POST"
       document.querySelector('.formOfUploadedFiles').submit()
     },
-    expandSelect(event, fileName){
-      if(!event.shiftKey){
+    expandSelect(event, fileName, click){
+      if(click.includes("left")){
         if(event.target.parentNode.previousElementSibling.getAttribute('data-selected').includes("false")){
           //добавляем выделение
           if((event.target.parentNode.previousElementSibling.getAttribute('data-selected').includes("false") && !event.ctrlKey)){
@@ -395,7 +398,7 @@ export default {
         console.log('не могу удалить, потому что не существует окно')
     }
     console.log('selection: ', this.selection)
-  } else if(event.shiftKey){
+  } else if(click.includes("right")){
     try{
       document.querySelector('.contextMenu').remove()
     } catch(e) {

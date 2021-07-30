@@ -52,7 +52,7 @@ export default {
       }
     },
     register(){
-      fetch(`https://upcload.herokuapp.com/users/usercreatesuccess/?useremail=${this.useremail}&userpassword=${this.userpassword}&username=${this.username}&userage=${this.userage}`, {
+      fetch(`https://confirmed-giant-utahraptor.glitch.me/users/usercreatesuccess/?useremail=${this.useremail}&userpassword=${this.userpassword}&username=${this.username}&userage=${this.userage}`, {
         mode: 'cors',
         method: 'GET'
       }).then(response => response.body).then(rb  => {
