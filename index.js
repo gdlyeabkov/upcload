@@ -116,7 +116,7 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
         } else if(file.mimetype.includes("audio")){
             fileType = "mp3"
         }
-        fs.rename(`./uploads/${file.filename}`, `./uploads/${req.query.useremail.split('@')[0]}/${file.filename}`, (err) {
+        fs.rename(`./uploads/${file.filename}`, `./uploads/${req.query.owner.split('@')[0]}/${file.filename}`, (err) {
             if(err) {
                 return res.json({ "status": "error" })
             }
