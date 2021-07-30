@@ -226,7 +226,7 @@ app.get('/users/usercreatesuccess', async (req, res)=>{
                 if(err){
                     return res.json({ 'status': "error" })
                 } else {
-                    return res.redirect(`https://confirmed-giant-utahraptor.glitch.me/files/allocate/?useremail=${req.query.useremail.split('@')[0]}`)
+                    return res.redirect(`https://confirmed-giant-utahraptor.glitch.me/files/allocate/?useremail=${req.query.useremail}`)
                     // return res.json({ 'status': "OK" })
                 }
             });
