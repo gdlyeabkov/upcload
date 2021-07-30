@@ -15,15 +15,15 @@
           <h5 class="card-header" style="overflow: hidden;">
             <!-- <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" /> -->
             <div v-if="file.type.includes('img')">
-              <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}`" style="width: 100%; height: 100%;">
+              <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" style="width: 100%; height: 100%;">
             </div>
             <div v-else-if="file.type.includes('mp4')">
               <video autoplay loop style="width: 100%; height: 100%;" controls>
-                <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}`"/>
+                <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`"/>
               </video>
             </div>
             <div v-else-if="file.type.includes('mp3')">
-              <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}`" controls></audio>
+              <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" controls></audio>
             </div>
             <p>{{ Math.floor(file.size / 1024) }} Кб</p>
           </h5>
@@ -90,15 +90,15 @@
         </h2>
         
           <div v-if="currentOpenFile.type.includes('img')" style="display: flex; justify-content: center;">
-            <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}`" style="width: 50%; height: 100%;">
+            <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}&useremail=${useremail}`" style="width: 50%; height: 100%;">
           </div>
           <div v-else-if="currentOpenFile.type.includes('mp4')" style="display: flex; justify-content: center;">
             <video autoplay loop style="width: 50%; height: 100%;" controls>
-              <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}`"/>
+              <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}&useremail=${useremail}`"/>
             </video>
           </div>
           <div v-else-if="currentOpenFile.type.includes('mp3')" style="display: flex; justify-content: center;">
-            <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}`" controls></audio>
+            <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}&useremail=${useremail}`" controls></audio>
           </div>
         
         
