@@ -116,7 +116,7 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
         } else if(file.mimetype.includes("audio")){
             fileType = "mp3"
         }
-        fs.rename(`./uploads/${file.filename}`, `./uploads/${req.query.owner.split('@')[0]}/${file.filename}`, (err) {
+        fs.rename(`./uploads/${file.filename}`, `./uploads/${req.query.owner.split('@')[0]}/${file.filename}`, (err, file) => {
             if(err) {
                 return res.json({ "status": "error" })
             }
@@ -247,6 +247,7 @@ app.get('/users/usercreatesuccess', async (req, res)=>{
 })
 
 app.get('/files/allocate', (req, res) => {
+    
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
