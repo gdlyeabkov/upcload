@@ -116,6 +116,11 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
         } else if(file.mimetype.includes("audio")){
             fileType = "mp3"
         }
+        fs.rename(`./uploads/${file.filename}`, `./uploads/${req.query.useremail.split('@')[0]}/${file.filename}`, (err) {
+            if(err) {
+                return res.json({ "status": "error" })
+            }
+        })
         await new FileModel({ name: file.filename, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
             if(err){
                 return res.json({ "status": "error" })
@@ -242,6 +247,11 @@ app.get('/users/usercreatesuccess', async (req, res)=>{
 })
 
 app.get('/files/allocate', (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    
     fs.mkdir(`./uploads/${req.query.useremail.split('@')[0]}`, (err, dir) => {
         if(err){
             return res.json({ 'status': "error" })
