@@ -226,12 +226,8 @@ app.get('/users/usercreatesuccess', async (req, res)=>{
                 if(err){
                     return res.json({ 'status': "error" })
                 } else {
-                    fs.mkdir(`${__dirname}/uploads/${req.query.useremail.split('@')[0]}`, (err, dir) => {
-                        if(err){
-                            return res.json({ 'status': "error" })
-                        }
-                        return res.json({ 'status': "OK" })
-                    })
+                    return res.redirect('https://confirmed-giant-utahraptor.glitch.me/files/allocate')
+                    // return res.json({ 'status': "OK" })
                 }
             });
         }
@@ -243,6 +239,16 @@ app.get('/users/usercreatesuccess', async (req, res)=>{
     //     }
     // });
 
+})
+
+app.get('/files/allocate', (req, res) => {
+    fs.mkdir(`./uploads/${req.query.useremail.split('@')[0]}`, (err, dir) => {
+        if(err){
+            return res.json({ 'status': "error" })
+        }
+        // return res.json({ 'status': "OK" })
+        return res.redirect(`https://upcload.herokuapp.com/`)
+    })
 })
 
 app.get('/files/generatelink', async (req, res)=>{
