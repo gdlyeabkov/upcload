@@ -226,7 +226,7 @@ app.get('/users/usercreatesuccess', async (req, res)=>{
                 if(err){
                     return res.json({ 'status': "error" })
                 } else {
-                    fs.mkdir(`./uploads/${req.query.useremail.split('@')[0]}`, (err, dir) => {
+                    fs.mkdir(`${__dirname}/uploads/${req.query.useremail.split('@')[0]}`, (err, dir) => {
                         if(err){
                             return res.json({ 'status': "error" })
                         }
