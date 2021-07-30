@@ -126,7 +126,7 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
 })
 
 app.get('/cleandata', (req, res) => {
-    fs.unlink(`uploads/${req.query.useremail}/${req.query.filename}.zip`, (err) => {
+    fs.unlink(`uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`, (err) => {
         if(err) {
             return res.json({ 'status': 'error' })
         }
@@ -150,7 +150,7 @@ app.get('/files/delete', (req, res) => {
                     if(err){
                         return res.json({ 'status': 'error' })
                     }
-                    fs.unlink(`uploads/${req.query.owner}/${file.name}`, (err) => {
+                    fs.unlink(`uploads/${req.query.owner.split('@')[0]}/${file.name}`, (err) => {
                         if(err) {
                             return res.json({ 'status': 'error' })
                         }
@@ -226,7 +226,7 @@ app.get('/users/usercreatesuccess', async (req, res)=>{
                 if(err){
                     return res.json({ 'status': "error" })
                 } else {
-                    fs.mkdir(`/uploads/${req.query.useremail}`)
+                    fs.mkdir(`/uploads/${req.query.useremail.split('@')[0]}`)
                     return res.json({ 'status': "OK" })
                 }
             });
@@ -275,7 +275,7 @@ app.get('/files/getpreview', (req, res)=>{
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
     
     if(req.query.filetype.includes("mp4") || req.query.filetype.includes("img") || req.query.filetype.includes("mp3")){
-        res.sendFile(__dirname + `/uploads/${req.query.useremail}/${req.query.previewname}`)
+        res.sendFile(__dirname + `/uploads/${req.query.useremail.split('@')[0]}/${req.query.previewname}`)
     }else if(req.query.filetype.includes("txt")){
         
     }
@@ -290,8 +290,8 @@ app.get('/files/downloads', (req, res)=>{
 
     let query = FileModel.findOne({'name': req.query.filename }, async function(err, file){
         if(!file.type.includes("group")){
-            console.log("path to file", path.join(__dirname, `uploads/${req.query.useremail}/${req.query.filename}`))
-            await res.download(path.join(__dirname, `uploads/${req.query.useremail}/${req.query.filename}`), `${req.query.filename}`, function (err) {
+            console.log("path to file", path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}`))
+            await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}`), `${req.query.filename}`, function (err) {
                 if (err) {
                     //error to download file
                     return res.json({ "status": "error to download file" })
@@ -307,7 +307,7 @@ app.get('/files/downloads', (req, res)=>{
             queryOfFiles.exec(async (err, files) => {
                 files.map(file => {
                     if(!file.type.includes("group")){
-                        filesPaths.push(`./uploads/${req.query.useremail}/${file.name}`)
+                        filesPaths.push(`./uploads/${req.query.useremail.split('@')[0]}/${file.name}`)
                     }
                 })
                 console.log('filesPaths: ', filesPaths)
@@ -320,17 +320,17 @@ app.get('/files/downloads', (req, res)=>{
                     // }
                     zip.addLocalFile(path)
                 })
-                zip.writeZip(`./uploads/${req.query.filename}.zip`)
+                zip.writeZip(`./uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`)
                 console.log("startPath: ", path.join(__dirname, path.sep + 'uploads') + path.sep + "temp.zip")
                 console.log("endPath: ", path.join(__dirname,  path.sep + 'uploads') + path.sep + req.query.filename + ".zip")
-                fs.rename(path.join(__dirname, path.sep + "uploads") + path.sep + "temp.zip", path.join(__dirname, path.sep + "uploads") + path.sep + req.query.filename + ".zip", function (err) {
-                    if (err) {
+                // fs.rename(path.join(__dirname, path.sep + "uploads") + path.sep + "temp.zip", path.join(__dirname, path.sep + "uploads") + path.sep + req.query.filename + ".zip", function (err) {
+                //     if (err) {
                     
-                    }
+                //     }
 
-                })
+                // })
                 // return res.redirect(`http://localhost:8080/?path=${req.query.filepath}`)
-                await res.download(path.join(__dirname, `uploads/${req.query.useremail}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
+                await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
                     if (err) {
                         //error to download file
                         return res.json({ "status": "error to download file" })
