@@ -1,3 +1,4 @@
+const diskinfo = require('diskinfo')
 const serveStatic = require('serve-static')
 const AdmZip = require('adm-zip')
 const fs = require('fs')
@@ -127,7 +128,11 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
             }
         })
     }
-    return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.owner}&path=${req.query.filepath}`)
+    let freespace = 0
+    diskinfo.getDrives((err, aDrives) => {
+        freespace = aDrives[0].available
+    })
+    return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.owner}&path=${req.query.filepath}&freespace=${freespace}`)
 })
 
 app.get('/cleandata', (req, res) => {
@@ -258,7 +263,9 @@ app.get('/files/allocate', (req, res) => {
             return res.json({ 'status': "error" })
         }
         // return res.json({ 'status': "OK" })
-        return res.redirect(`https://upcload.herokuapp.com/`)
+        return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.useremail}&path=root&freespace=0`)
+        // return res.redirect(`https://upcload.herokuapp.com/users/login`)
+
     })
 })
 
@@ -363,6 +370,11 @@ app.get('/files/downloads', (req, res)=>{
             })
         }
     })
+})
+
+app.get('**', (req, res) => {
+    console.log('redirect')
+    return res.redirect(`/?redirectroute=${req.path}`)
 })
 
 const port = process.env.PORT || 8080

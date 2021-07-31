@@ -174,7 +174,8 @@ export default {
         type: 'img'
       },
       token: '',
-      useremail: ''
+      useremail: '',
+      freeSpace: 157286400
     }
   },
   mounted(){
@@ -233,6 +234,7 @@ export default {
         })
         .then(result => {
           console.log(JSON.parse(result))
+          this.freeSpace = this.$route.query.freespace
           this.allFiles = JSON.parse(result).allFiles.filter(file => {
             if(this.$route.query.path !== null && this.$route.query.path !== undefined){
               if(file.path === this.$route.query.path){
@@ -313,18 +315,15 @@ export default {
       }
     },
     uploadFiles(event) {
-      // action="http://localhost:8080/files/upload/?filename=group&filetype=group&filesize=256"
-      // if(event.target.files[0].type.includes("img")){
-      //     fileType = "img"
-      // } else if(event.target.files[0].type.includes("mp4")){
-      //     fileType = "mp4"
-      // } else if(event.target.files[0].type.includes("mp3")){
-      //     fileType = "mp3"
-      // }
-      document.querySelector('.formOfUploadedFiles').method = "POST"
-      // document.querySelector('.formOfUploadedFiles').action = `http://localhost:8080/files/upload/?filename=${event.target.files[0].name}&filetype=${fileType}&filesize=${event.target.files[0].size}`
-      // document.querySelector('.formOfUploadedFiles').setAttribute("action", `http://localhost:8080/files/upload/?filename=${event.target.files[0].name}&filetype=${fileType}&filesize=${event.target.files[0].size}`)
-      document.querySelector('.formOfUploadedFiles').submit()
+      let totalSize = 0
+      for(let file of this.$refs.fileUploader.files){
+        totalSize += file.size
+      }
+      if(totalSize <= this.freeSpace){
+        document.querySelector('.formOfUploadedFiles').method = "POST"
+        document.querySelector('.formOfUploadedFiles').submit()  
+      }
+      
     },
     closeModal(event){
       event.target.parentNode.parentNode.style.display = "none"
@@ -350,12 +349,20 @@ export default {
       this.$refs.cloud.style.left = 'calc(100% - 25%)'
     },
     drop_handler(event){
+      event.preventDefault()
       this.$refs.cloud.style.fontSize = '124px'
       this.$refs.cloud.style.top = 'calc(100% - 25%)'
       this.$refs.cloud.style.left = 'calc(100% - 15%)'
       this.$refs.fileUploader.files = event.dataTransfer.files
-      document.querySelector('.formOfUploadedFiles').method = "POST"
-      document.querySelector('.formOfUploadedFiles').submit()
+      let totalSize = 0
+      for(let file of this.$refs.fileUploader.files){
+        totalSize += file.size
+      }
+      if(totalSize <= this.freeSpace){
+        document.querySelector('.formOfUploadedFiles').method = "POST"
+        document.querySelector('.formOfUploadedFiles').submit()  
+      }
+      
     },
     expandSelect(event, fileName, click){
       if(click.includes("left")){

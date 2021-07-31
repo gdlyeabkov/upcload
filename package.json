@@ -10,6 +10,7 @@
   "dependencies": {
     "adm-zip": "^0.5.5",
     "bcrypt": "^5.0.1",
+    "diskinfo": "0.0.3",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.13.3",
