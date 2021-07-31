@@ -21,14 +21,16 @@ const storage = multer.diskStorage({
         function dontRepeatFilesNames(changedFileName) {
             indexOfCalls++
             fs.readdir(`./uploads/${req.query.owner.split('@')[0]}/`, (err, userFiles) => {
-                userFiles.map(userFile => {
-                    console.log('userFile: ', userFile)
-                    if(changedFileName === userFile){
-                        dontRepeatFilesNames(`${file.originalname.split('.')[0]}(${indexOfCalls}).${file.originalname.split('.')[1]}`)
-                    } else {
-                        cb(null, changedFileName)
-                    }
-                })
+                if(userFiles.length >= 1){
+                    userFiles.map(userFile => {
+                        console.log('userFile: ', userFile)
+                        if(changedFileName === userFile){
+                            dontRepeatFilesNames(`${file.originalname.split('.')[0]}(${indexOfCalls}).${file.originalname.split('.')[1]}`)
+                        } else {
+                            cb(null, changedFileName)
+                        }
+                    })
+                }
             })
         }
         dontRepeatFilesNames(file.originalname)
@@ -387,22 +389,22 @@ app.get('/files/downloads', (req, res)=>{
                 
                 setTimeout(async () => {
                     zip.writeZip(`./uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`)
-                    // await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
-                    //     if (err) {
-                    //         //error to download file
-                    //         return res.json({ "status": "error to download file" })
-                    //     } else {
-                    //         //file success download
-                    //         return res.json({ "status": "file success download" })
-                    //     }
-                    // })
-                //     setTimeout(() => {
-                //         fs.unlink(`uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`, (err) => {
-                //             if(err) {
-                //                 return res.json({ 'status': 'error' })
-                //             }
-                //         })  
-                    // }, 10000)
+                    await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
+                        if (err) {
+                            //error to download file
+                            return res.json({ "status": "error to download file" })
+                        } else {
+                            //file success download
+                            return res.json({ "status": "file success download" })
+                        }
+                    })
+                    setTimeout(() => {
+                        fs.unlink(`uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`, (err) => {
+                            if(err) {
+                                return res.json({ 'status': 'error' })
+                            }
+                        })  
+                    }, 10000)
                 }, 2000)
                 
                 // await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
