@@ -338,13 +338,17 @@ app.get('/files/downloads', (req, res)=>{
             })
         } else if(file.type.includes("group")){
             let zip = new AdmZip()
-            let queryOfFiles = FileModel.find({ 'path': req.query.filepath })
+            let queryOfFiles = FileModel.find({ 'path': { $regex: `${req.query.filepath}*` } })
             let filesPaths = []
             queryOfFiles.exec(async (err, files) => {
                 files.map(file => {
-                    if(!file.type.includes("group")){
-                        filesPaths.push(`./uploads/${req.query.useremail.split('@')[0]}/${file.name}`)
-                    }
+                    
+                    // if(!file.type.includes("group")){
+                    //     filesPaths.push(`./uploads/${req.query.useremail.split('@')[0]}/${file.name}`)
+                    // }
+
+                    filesPaths.push(`./uploads/${req.query.useremail.split('@')[0]}/${file.name}`)
+
                 })
                 console.log('filesPaths: ', filesPaths)
                 filesPaths.map(path => {
@@ -354,8 +358,38 @@ app.get('/files/downloads', (req, res)=>{
                     // } else if (path.isDirectory()) {
                     //     zip.addLocalFolder(path, path)
                     // }
-                    zip.addLocalFile(path)
+                    
+                    // zip.addLocalFile(path)
+
+                    fs.access(path, (err) =>{
+                        if(err){
+                            let queryOfFolder = FileModel.findOne({ name: path.split('/')[path.split('/').length - 1] })
+                            queryOfFolder.exec((err, folder) => {
+                                if(folder.path.includes('/')) {
+                                    zip.addLocalFolder(path, `${folder.path}/${path.split('/')[path.split('/').length - 1]}`)
+                                } else {
+                                    zip.addLocalFolder(path, folder.path)
+                                }
+                            })
+                        }
+                        // zip.addLocalFile(path)
+                    })
+
                 })
+
+                filesPaths.map(path => {
+                    fs.access(path, (err) =>{
+                        if(err){
+                            return
+                        }
+                        let queryOfFile = FileModel.findOne({ name: path.split('/')[path.split('/').length - 1] })
+                        queryOfFile.exec((err, file) => {
+                            zip.addLocalFile(path, `${file.path}/${path.split('/')[path.split('/').length - 1]}`)
+                        })
+                    })
+
+                })
+
                 zip.writeZip(`./uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`)
                 console.log("startPath: ", path.join(__dirname, path.sep + 'uploads') + path.sep + "temp.zip")
                 console.log("endPath: ", path.join(__dirname,  path.sep + 'uploads') + path.sep + req.query.filename + ".zip")
