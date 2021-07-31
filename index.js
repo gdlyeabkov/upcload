@@ -206,7 +206,11 @@ app.get('/users/check', (req,res)=>{
             let loginCheck = req.query.useremail === user.email
             let passwordCheck = bcrypt.compareSync(req.query.userpassword, user.password) && req.query.userpassword !== ''
             if(user !== null && user !== undefined && loginCheck && passwordCheck){
-                return res.json({ 'status': "OK" })
+                let freespace = 0
+                diskinfo.getDrives((err, aDrives) => {
+                    freespace = aDrives[0].available
+                })
+                return res.json({ 'status': "OK" , "freespace": freespace })
             } else {
                 return res.json({ 'status': "error" })
             }
