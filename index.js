@@ -342,73 +342,31 @@ app.get('/files/downloads', (req, res)=>{
             let filesPaths = []
             queryOfFiles.exec(async (err, files) => {
                 files.map(file => {
-                    
-                    // if(!file.type.includes("group")){
-                    //     filesPaths.push(`./uploads/${req.query.useremail.split('@')[0]}/${file.name}`)
-                    // }
-
-                    filesPaths.push(`./uploads/${req.query.useremail.split('@')[0]}/${file.name}`)
-
+                    if(!file.type.includes("group")){
+                        filesPaths.push(`./uploads/${req.query.useremail.split('@')[0]}/${file.name}`)
+                    }
                 })
                 console.log('filesPaths: ', filesPaths)
                 filesPaths.map(path => {
-                    // let p = fs.stat(path);
-                    // if (path.isFile()) {
-                    //     zip.addLocalFile(path)
-                    // } else if (path.isDirectory()) {
-                    //     zip.addLocalFolder(path, path)
-                    // }
-                    
-                    // zip.addLocalFile(path)
-
-                    fs.access(path, (err) =>{
-                        if(err){
-                            let queryOfFolder = FileModel.findOne({ name: path.split('/')[path.split('/').length - 1] })
-                            queryOfFolder.exec((err, folder) => {
-                                if(folder.path.includes('/')) {
-                                    zip.addLocalFolder(path, `${folder.path}/${path.split('/')[path.split('/').length - 1]}`)
-                                } else {
-                                    zip.addLocalFolder(path, folder.path)
-                                }
-                            })
-                        }
-                        // zip.addLocalFile(path)
+                    let queryOfFile = FileModel.findOne({ name: path.split('/')[path.split('/').length - 1] })
+                    queryOfFile.exec((err, file) => {
+                        zip.addLocalFile(path, `${file.path}`)
                     })
-
                 })
-
-                filesPaths.map(path => {
-                    fs.access(path, (err) =>{
-                        if(err){
-                            return
-                        }
-                        let queryOfFile = FileModel.findOne({ name: path.split('/')[path.split('/').length - 1] })
-                        queryOfFile.exec((err, file) => {
-                            zip.addLocalFile(path, `${file.path}/${path.split('/')[path.split('/').length - 1]}`)
-                        })
-                    })
-
-                })
-
-                zip.writeZip(`./uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`)
-                console.log("startPath: ", path.join(__dirname, path.sep + 'uploads') + path.sep + "temp.zip")
-                console.log("endPath: ", path.join(__dirname,  path.sep + 'uploads') + path.sep + req.query.filename + ".zip")
-                // fs.rename(path.join(__dirname, path.sep + "uploads") + path.sep + "temp.zip", path.join(__dirname, path.sep + "uploads") + path.sep + req.query.filename + ".zip", function (err) {
+                
+                setTimeout(() => {
+                    zip.writeZip(`./uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`)
+                }, 2000)
+                
+                // await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
                 //     if (err) {
-                    
+                //         //error to download file
+                //         return res.json({ "status": "error to download file" })
+                //     } else {
+                //         //file success download
+                //         return res.json({ "status": "file success download" })
                 //     }
-
                 // })
-                // return res.redirect(`http://localhost:8080/?path=${req.query.filepath}`)
-                await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
-                    if (err) {
-                        //error to download file
-                        return res.json({ "status": "error to download file" })
-                    } else {
-                        //file success download
-                        return res.json({ "status": "file success download" })
-                    }
-                })
             })
         }
     })
@@ -419,7 +377,6 @@ app.get('**', (req, res) => {
     return res.redirect(`/?redirectroute=${req.path}`)
 })
 
-const port = process.env.PORT || 8080
-
-// const port = 4000
+// const port = process.env.PORT || 8080
+const port = 4000
 app.listen(port)

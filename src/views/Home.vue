@@ -266,12 +266,13 @@ export default {
       }
     },
     download(event, fileName){
-      window.location = `https://confirmed-giant-utahraptor.glitch.me/files/downloads/?useremail=${this.useremail}&filename=${fileName}&filepath=${this.path + '/' + fileName}`
+      // window.location = `https://confirmed-giant-utahraptor.glitch.me/files/downloads/?useremail=${this.useremail}&filename=${fileName}&filepath=${this.path + '/' + fileName}`
+      window.location = `http://localhost:4000/files/downloads/?useremail=${this.useremail}&filename=${fileName}&filepath=${this.path + '/' + fileName}`
     },
     previousFolder(){
       let previousDir = this.path.split('/')
       previousDir.pop()
-      this.$router.push({ name: 'Home', query: { path: previousDir.join('/') } })
+      this.$router.push({ name: 'Home', query: { path: previousDir.join('/'), useremail: this.useremail, freeSpace: this.freeSpace } })
       window.location.reload()
     },
     createFolder(){
@@ -308,7 +309,7 @@ export default {
     },
     changePath(event, folderName, fileType){
       if(fileType.includes("group")){
-        this.$router.push({ name: 'Home', query:{ path: `${this.path}/${folderName}` } })
+        this.$router.push({ name: 'Home', query:{ path: `${this.path}/${folderName}`, useremail: this.useremail, freeSpace: this.freeSpace } })
         window.location.reload()
       } else if(!fileType.includes("group")){
         this.showFileModal(event, true)
