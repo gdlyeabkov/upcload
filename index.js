@@ -354,7 +354,7 @@ app.get('/files/downloads', (req, res)=>{
                     })
                 })
                 
-                setTimeout(() => {
+                setTimeout(async () => {
                     zip.writeZip(`./uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`)
                     await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
                         if (err) {
