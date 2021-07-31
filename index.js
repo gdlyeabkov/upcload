@@ -30,6 +30,8 @@ const storage = multer.diskStorage({
                             cb(null, changedFileName)
                         }
                     })
+                } else{
+                    cb(null, file.originalname)
                 }
             })
         }
