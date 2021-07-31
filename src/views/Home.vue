@@ -55,10 +55,11 @@
       </div>
     </div>
     <div v-else-if="allFiles !== null && allFiles.length === 0">
-      <p @click="expandSelect($event, 'mockFileName')" style="cursor: pointer; text-align: center; font-size: 24px; color: rgb(215, 215, 215)">Вы не загрузили ещё ни 1 файл.</p>
+      <p @contextmenu="expandSelect($event, 'mockFileName', 'right')" style="cursor: pointer; text-align: center; font-size: 24px; color: rgb(215, 215, 215)">Вы не загрузили ещё ни 1 файл.</p>
     </div>
     <br style="clear: both;"/>
     <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`https://confirmed-giant-utahraptor.glitch.me/files/upload/?filepath=${path}&owner=${useremail}`">
+    <!-- <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`http://localhost:4000/files/upload/?filepath=${path}&owner=${useremail}`"> -->
       <input style="display: none;" id="filename" type="text" name="name" />
       <input style="display: none;" id="filesize" type="number" name="size" />
       <input style="display: none;" id="filetype" type="text" name="type" />
@@ -180,18 +181,19 @@ export default {
   },
   mounted(){
     this.token = window.localStorage.getItem("upcloadsecret")
+    this.freeSpace = this.$route.query.freespace
     jwt.verify(this.token, 'upcloadsecret', (err, decoded) => {
       if(this.$route.query.redirectroute !== null && this.$route.query.redirectroute !== undefined){
         // логика перенаправления
         if(this.$route.query.redirectroute.includes('users/login') || this.$route.query.redirectroute.includes('users/register')){
           this.$router.push({ path: this.$route.query.redirectroute })
         } else if(!this.$route.query.redirectroute.includes('users/login') && !this.$route.query.redirectroute.includes('users/register')){
-          this.$router.push({ name: "Home", query: { useremail: decoded.useremail, path: 'root' } })
+          this.$router.push({ name: "Home", query: { useremail: decoded.useremail, path: 'root', freespace: this.freeSpace } })
         }
       } else { 
         // логика домашней страницы
         if(err){
-          this.$router.push({ name: 'UsersLogin' })
+          this.$router.push({ name: 'UsersLogin', query: { freeSpace: this.freespace } })
         }
         this.useremail = decoded.useremail
         window.addEventListener("contextmenu", (event) => {
@@ -234,7 +236,7 @@ export default {
         })
         .then(result => {
           console.log(JSON.parse(result))
-          this.freeSpace = this.$route.query.freespace
+          // this.freeSpace = this.$route.query.freespace
           this.allFiles = JSON.parse(result).allFiles.filter(file => {
             if(this.$route.query.path !== null && this.$route.query.path !== undefined){
               if(file.path === this.$route.query.path){
@@ -267,6 +269,7 @@ export default {
     },
     download(event, fileName){
       window.location = `https://confirmed-giant-utahraptor.glitch.me/files/downloads/?useremail=${this.useremail}&filename=${fileName}&filepath=${this.path + '/' + fileName}`
+      // window.location = `http://localhost:4000/files/downloads/?useremail=${this.useremail}&filename=${fileName}&filepath=${this.path + '/' + fileName}`
     },
     previousFolder(){
       let previousDir = this.path.split('/')

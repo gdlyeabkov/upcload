@@ -14,7 +14,24 @@ const storage = multer.diskStorage({
       cb(null, 'uploads')
     },
     filename: function (req, file, cb) {
-      cb(null, file.originalname)
+        // cb(null, file.originalname)
+
+        let indexOfCalls = 0
+        console.log('req.query: ', req.query)
+        function dontRepeatFilesNames(changedFileName) {
+            indexOfCalls++
+            fs.readdir(`./uploads/${req.query.owner.split('@')[0]}/`, (err, userFiles) => {
+                userFiles.map(userFile => {
+                    console.log('userFile: ', userFile)
+                    if(changedFileName === userFile){
+                        dontRepeatFilesNames(`${file.originalname.split('.')[0]}(${indexOfCalls}).${file.originalname.split('.')[1]}`)
+                    } else {
+                        cb(null, changedFileName)
+                    }
+                })
+            })
+        }
+        dontRepeatFilesNames(file.originalname)
     }
 })
 const upload = multer({ storage: storage })
@@ -96,18 +113,27 @@ app.get('/home', (req, res)=>{
     
 })
 
-app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-
+app.post('/files/upload', [(req, res, next) => {
+    console.log('custom middleware')
     const files = req.files
 
     if(!files){
         console.log("Error to upload file ")
     }
     console.log("req.files: ", req.files)
+    return next()
+}, upload.array('myFiles', 999)], async (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+
+    // const files = req.files
+
+    // if(!files){
+    //     console.log("Error to upload file ")
+    // }
+    // console.log("req.files: ", req.files)
     for(let file of req.files){
         let fileType = "img"
         if(file.mimetype.includes("img")){
@@ -130,8 +156,12 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
     }
     let freespace = 0
     diskinfo.getDrives((err, aDrives) => {
+        if(err) {
+            freespace = 0    
+        }
         freespace = aDrives[0].available
     })
+
     return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.owner}&path=${req.query.filepath}&freespace=${freespace}`)
 })
 
@@ -350,28 +380,29 @@ app.get('/files/downloads', (req, res)=>{
                 filesPaths.map(path => {
                     let queryOfFile = FileModel.findOne({ name: path.split('/')[path.split('/').length - 1] })
                     queryOfFile.exec((err, file) => {
-                        zip.addLocalFile(path, `${file.path}`)
+                        let newPath = file.path.split(file.path.split(req.query.filename)[0])[1]
+                        zip.addLocalFile(path, `${newPath}`)
                     })
                 })
                 
                 setTimeout(async () => {
                     zip.writeZip(`./uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`)
-                    await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
-                        if (err) {
-                            //error to download file
-                            return res.json({ "status": "error to download file" })
-                        } else {
-                            //file success download
-                            return res.json({ "status": "file success download" })
-                        }
-                    })
-                    setTimeout(() => {
-                        fs.unlink(`uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`, (err) => {
-                            if(err) {
-                                return res.json({ 'status': 'error' })
-                            }
-                        })  
-                    }, 10000)
+                    // await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
+                    //     if (err) {
+                    //         //error to download file
+                    //         return res.json({ "status": "error to download file" })
+                    //     } else {
+                    //         //file success download
+                    //         return res.json({ "status": "file success download" })
+                    //     }
+                    // })
+                //     setTimeout(() => {
+                //         fs.unlink(`uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`, (err) => {
+                //             if(err) {
+                //                 return res.json({ 'status': 'error' })
+                //             }
+                //         })  
+                    // }, 10000)
                 }, 2000)
                 
                 // await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
@@ -393,6 +424,6 @@ app.get('**', (req, res) => {
     return res.redirect(`/?redirectroute=${req.path}`)
 })
 
-const port = process.env.PORT || 8080
-// const port = 4000
+// const port = process.env.PORT || 8080
+const port = 4000
 app.listen(port)
