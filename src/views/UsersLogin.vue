@@ -36,7 +36,7 @@ export default {
   },
   mounted(){
     if(this.$route.query.freespace === undefined || this.$route.query.freespace === null){
-      this.freespace = 0
+      this.freespace = 104857600
     } else {
       this.freespace = this.$route.query.freespace
     }
