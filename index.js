@@ -356,17 +356,24 @@ app.get('/files/downloads', (req, res)=>{
                 
                 setTimeout(() => {
                     zip.writeZip(`./uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`)
+                    setTimeout(() => {
+                        fs.unlink(`uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`, (err) => {
+                            if(err) {
+                                return res.json({ 'status': 'error' })
+                            }
+                        })  
+                    }, 10000)
                 }, 2000)
                 
-                // await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
-                //     if (err) {
-                //         //error to download file
-                //         return res.json({ "status": "error to download file" })
-                //     } else {
-                //         //file success download
-                //         return res.json({ "status": "file success download" })
-                //     }
-                // })
+                await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
+                    if (err) {
+                        //error to download file
+                        return res.json({ "status": "error to download file" })
+                    } else {
+                        //file success download
+                        return res.json({ "status": "file success download" })
+                    }
+                })
             })
         }
     })
@@ -377,6 +384,6 @@ app.get('**', (req, res) => {
     return res.redirect(`/?redirectroute=${req.path}`)
 })
 
-// const port = process.env.PORT || 8080
-const port = 4000
+const port = process.env.PORT || 8080
+// const port = 4000
 app.listen(port)

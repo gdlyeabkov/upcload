@@ -266,8 +266,7 @@ export default {
       }
     },
     download(event, fileName){
-      // window.location = `https://confirmed-giant-utahraptor.glitch.me/files/downloads/?useremail=${this.useremail}&filename=${fileName}&filepath=${this.path + '/' + fileName}`
-      window.location = `http://localhost:4000/files/downloads/?useremail=${this.useremail}&filename=${fileName}&filepath=${this.path + '/' + fileName}`
+      window.location = `https://confirmed-giant-utahraptor.glitch.me/files/downloads/?useremail=${this.useremail}&filename=${fileName}&filepath=${this.path + '/' + fileName}`
     },
     previousFolder(){
       let previousDir = this.path.split('/')
