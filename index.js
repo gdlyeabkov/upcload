@@ -262,8 +262,12 @@ app.get('/files/allocate', (req, res) => {
         if(err){
             return res.json({ 'status': "error" })
         }
+        let freespace = 0
+        diskinfo.getDrives((err, aDrives) => {
+            freespace = aDrives[0].available
+        })
         // return res.json({ 'status': "OK" })
-        return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.useremail}&path=root&freespace=0`)
+        return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.useremail}&path=root&freespace=${freespace}`)
         // return res.redirect(`https://upcload.herokuapp.com/users/login`)
 
     })

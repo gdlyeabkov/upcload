@@ -30,7 +30,15 @@ export default {
       useremail: '',
       userpassword: '',
       errors: "",
-      token: ''
+      token: '',
+      freespace: 0
+    }
+  },
+  mounted(){
+    if(this.$route.query.freespace === undefined || this.$route.query.freespace === null){
+      this.freespace = 0
+    } else {
+      this.freespace = this.$route.query.freespace
     }
   },
   methods:{
@@ -75,7 +83,7 @@ export default {
             useremail: this.useremail
             }, 'upcloadsecret', { expiresIn: '5m' })
           localStorage.setItem('upcloadsecret', this.token)
-          this.$router.push({ 'name': "Home", query: { "useremail": this.useremail, "path": "root" } })
+          this.$router.push({ 'name': "Home", query: { "useremail": this.useremail, "path": "root", "freespace": this.freespace } })
         } else if(JSON.parse(result).status.includes("Error")){
           this.errors = "Такого пользователя не существует!!!"
         }
