@@ -60,8 +60,8 @@
         <p @contextmenu="expandSelect($event, 'mockFileName', 'right')" style="position:relative; top: 0px;  left: 0px; z-index: 2; cursor: pointer; text-align: center; font-size: 24px; color: rgb(215, 215, 215)">Вы не загрузили ещё ни 1 файл.</p>
       </div>
       <br style="clear: both;"/>
-      <!-- <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`https://confirmed-giant-utahraptor.glitch.me/files/upload/?filepath=${path}&owner=${useremail}`"> -->
-      <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`http://localhost:4000/files/upload/?filepath=${path}&owner=${useremail}`">
+      <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`https://confirmed-giant-utahraptor.glitch.me/files/upload/?filepath=${path}&owner=${useremail}`">
+      <!-- <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`http://localhost:4000/files/upload/?filepath=${path}&owner=${useremail}`"> -->
         <input style="display: none;" id="filename" type="text" name="name" />
         <input style="display: none;" id="filesize" type="number" name="size" />
         <input style="display: none;" id="filetype" type="text" name="type" />
