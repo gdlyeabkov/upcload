@@ -7,8 +7,8 @@
       <!-- <iframe class="object" src="./main.txt" width="468" height="60" align="left">
         Ваш браузер не поддерживает плавающие фреймы!
       </iframe> -->
-      <p v-if="path !== 'root'" style="margin-left: 35px; display: inline; cursor: pointer; font-size: 24px; color: rgb(165, 165, 165); font-weight: bold;" @click="previousFolder()">..</p>&nbsp;
-      <p style="display: inline; font-size: 24px; color: rgb(165, 165, 165)">{{ path }}</p>
+      <p v-if="path !== 'root'" style="margin-left: 35px; display: inline; cursor: pointer; font-size: 24px; color: rgb(165, 165, 165); font-weight: bold; position: relative; top: 0px; left: 0px; z-index: 2;" @click="previousFolder()">..</p>&nbsp;
+      <p style="display: inline; font-size: 24px; color: rgb(165, 165, 165); position: relative; top: 0px; left: 0px; z-index: 2;">{{ path }}</p>
       <div v-if="allFiles !== null && allFiles.length !== 0">
         <div style="position: relative; top: 0px; left: 0px; z-index: 2;" v-for="file in allFiles">
           <input data-selected="false" type="hidden" :value="file._id">
@@ -383,7 +383,7 @@ export default {
           console.log(JSON.parse(result))
           document.querySelector('.createFolderModal').style.display = `none`
           window.location.reload()
-        });
+        })
     },
     changePath(event, folderName, fileType){
       if(fileType.includes("group")){
@@ -398,12 +398,12 @@ export default {
       for(let file of this.$refs.fileUploader.files){
         totalSize += file.size
       }
-      if(totalSize <= this.freeSpace){
+      // if(totalSize <= this.freeSpace){
         document.querySelector('.formOfUploadedFiles').method = "POST"
         setTimeout(() => {
           document.querySelector('.formOfUploadedFiles').submit()
         }, 2000)
-      }
+      // }
       
     },
     closeModal(event){
@@ -448,10 +448,10 @@ export default {
             totalSize += file.size
           }
         setTimeout(() => {
-          if(totalSize <= this.freeSpace){
+          // if(totalSize <= this.freeSpace){
             document.querySelector('.formOfUploadedFiles').method = "POST"
             document.querySelector('.formOfUploadedFiles').submit()
-          }
+          // }
         }, 2000)
         // }
     },

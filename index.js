@@ -18,14 +18,11 @@ const storage = multer.diskStorage({
         // cb(null, file.originalname)
 
         let indexOfCalls = 0
-        // console.log('req.query: ', req.query)
         function dontRepeatFilesNames(changedFileName) {
             indexOfCalls++
             let filesInDir = []
             fs.readdir(`./uploads/${req.query.owner.split('@')[0]}/`, (err, userFiles) => {
                 filesInDir = userFiles
-                console.log('filesInDir: ', filesInDir)
-                console.log('changedFileName in filesInDir: ', changedFileName in filesInDir)
                 if(filesInDir.length >= 1){
                     if(filesInDir.includes(changedFileName)){
                         dontRepeatFilesNames(`${file.originalname.split('.')[0]}(${indexOfCalls}).${file.originalname.split('.')[1]}`)
@@ -165,7 +162,7 @@ app.post('/files/upload', [(req, res, next) => {
     // if(!files){
     //     console.log("Error to upload file ")
     // }
-    console.log("req.files: ", req.files)
+    
     // for(let file of req.files){
     //     let fileType = "img"
     //     if(file.mimetype.includes("img")){
@@ -195,6 +192,8 @@ app.post('/files/upload', [(req, res, next) => {
     })
 
     return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.owner}&path=${req.query.filepath}&freespace=${freespace}`)
+    // return res.redirect(`http://localhost:8080/?useremail=${req.query.owner}&path=${req.query.filepath}&freespace=${freespace}`)
+
 })
 
 app.get('/cleandata', (req, res) => {
