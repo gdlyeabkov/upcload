@@ -137,7 +137,7 @@ app.post('/files/upload', [(req, res, next) => {
     // if(!files){
     //     console.log("Error to upload file ")
     // }
-    // console.log("req.files: ", req.files)
+    console.log("req.files: ", req.files)
     for(let file of req.files){
         let fileType = "img"
         if(file.mimetype.includes("img")){
@@ -428,6 +428,6 @@ app.get('**', (req, res) => {
     return res.redirect(`/?redirectroute=${req.path}`)
 })
 
-const port = process.env.PORT || 8080
-// const port = 4000
+// const port = process.env.PORT || 8080
+const port = 4000
 app.listen(port)

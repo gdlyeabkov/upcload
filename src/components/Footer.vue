@@ -12,6 +12,7 @@ export default {
             position: relative;
             top: 0px;
             left: 0px;
+            z-index: 2;
             height: ${document.body.clientHeight - this.componentHeight}px;
         `
     }

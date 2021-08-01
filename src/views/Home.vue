@@ -10,7 +10,7 @@
       <p v-if="path !== 'root'" style="margin-left: 35px; display: inline; cursor: pointer; font-size: 24px; color: rgb(165, 165, 165); font-weight: bold;" @click="previousFolder()">..</p>&nbsp;
       <p style="display: inline; font-size: 24px; color: rgb(165, 165, 165)">{{ path }}</p>
       <div v-if="allFiles !== null && allFiles.length !== 0">
-        <div v-for="file in allFiles">
+        <div style="position: relative; top: 0px; left: 0px; z-index: 2;" v-for="file in allFiles">
           <input data-selected="false" type="hidden" :value="file._id">
           <div @contextmenu="expandSelect($event, file.name, 'right')" @dblclick="changePath($event, file.name, file.type)" @click="expandSelect($event, file.name, 'left')" class="card" style="cursor: pointer; float: left; margin: 5px; width: 350px;  height: 250px; ">
             <h5 class="card-header" style="overflow: hidden;">
@@ -57,11 +57,11 @@
         </div>
       </div>
       <div v-else-if="allFiles !== null && allFiles.length === 0">
-        <p @contextmenu="expandSelect($event, 'mockFileName', 'right')" style="cursor: pointer; text-align: center; font-size: 24px; color: rgb(215, 215, 215)">Вы не загрузили ещё ни 1 файл.</p>
+        <p @contextmenu="expandSelect($event, 'mockFileName', 'right')" style="position:relative; top: 0px;  left: 0px; z-index: 2; cursor: pointer; text-align: center; font-size: 24px; color: rgb(215, 215, 215)">Вы не загрузили ещё ни 1 файл.</p>
       </div>
       <br style="clear: both;"/>
-      <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`https://confirmed-giant-utahraptor.glitch.me/files/upload/?filepath=${path}&owner=${useremail}`">
-      <!-- <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`http://localhost:4000/files/upload/?filepath=${path}&owner=${useremail}`"> -->
+      <!-- <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`https://confirmed-giant-utahraptor.glitch.me/files/upload/?filepath=${path}&owner=${useremail}`"> -->
+      <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`http://localhost:4000/files/upload/?filepath=${path}&owner=${useremail}`">
         <input style="display: none;" id="filename" type="text" name="name" />
         <input style="display: none;" id="filesize" type="number" name="size" />
         <input style="display: none;" id="filetype" type="text" name="type" />
@@ -73,7 +73,11 @@
       </form>
     </div>
     <Footer :componentHeight="componentHeight"/>
-    <div @drop.prevent="drop_handler($event)" @dragenter="dragover_handler($event)" @click="clearSelection($event)" class="workSpace" style="width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: -5;"></div>
+    
+    <div @drop.prevent="drop_handler($event)" @dragenter="dragover_handler($event)" @click="clearSelection($event)" class="workSpace" style="width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: 1;"></div>
+    <!-- <div @dragenter="dragover_handler($event)" @click="clearSelection($event)" class="workSpace" style="width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: -5;"></div> -->
+
+    <!-- <div ref="droparea" style="position:fixed; top: 0px; left: 0px; background-color: green; width: 100%; height: 100%; z-index: 20; display: none;" @drop.prevent="drop_handler($event)" @dragenter="dragover_handler($event)"></div> -->
     <div class="createFolderModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
       <div class="alert alert-primary" role="alert" style="min-width: 550px;">
         <span @click="closeModal($event)" style=" font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
@@ -151,6 +155,15 @@
 </template>
 
 <script>
+// for(element of document.querySelector('*')){
+//   element.addEventListener('drop', (dropEvent) => {
+//     dropEvent.preventDefault()
+//   })
+// }
+document.addEventListener('dragover', (dragEvent) => {
+  dragEvent.preventDefault()
+})
+
 import * as jwt from 'jsonwebtoken'
 import Footer from '@/components/Footer.vue'
 import Header from '@/components/Header.vue'
@@ -387,7 +400,9 @@ export default {
       }
       if(totalSize <= this.freeSpace){
         document.querySelector('.formOfUploadedFiles').method = "POST"
-        document.querySelector('.formOfUploadedFiles').submit()  
+        setTimeout(() => {
+          document.querySelector('.formOfUploadedFiles').submit()
+        }, 2000)
       }
       
     },
@@ -414,22 +429,31 @@ export default {
       this.$refs.cloud.style.fontSize = '256px'
       this.$refs.cloud.style.top = 'calc(100% - 35%)'
       this.$refs.cloud.style.left = 'calc(100% - 25%)'
+
+      // this.$refs.droparea.style.display = "none"
+
     },
     drop_handler(event){
-      event.preventDefault()
+      // event.preventDefault()
       this.$refs.cloud.style.fontSize = '124px'
       this.$refs.cloud.style.top = 'calc(100% - 25%)'
       this.$refs.cloud.style.left = 'calc(100% - 15%)'
-      this.$refs.fileUploader.files = event.dataTransfer.files
-      let totalSize = 0
-      for(let file of this.$refs.fileUploader.files){
-        totalSize += file.size
-      }
-      if(totalSize <= this.freeSpace){
-        document.querySelector('.formOfUploadedFiles').method = "POST"
-        document.querySelector('.formOfUploadedFiles').submit()  
-      }
-      
+      console.log('event.dataTransfer.files: ', event.dataTransfer.files)
+      // this.$refs.droparea.style.display = "none"
+        // if(event.dataTransfer.files.every((file, fileIndex, fileList) => {
+          // return file.type.includes('png') || file.type.includes('mp4') || file.type.includes('mp3')})){
+          this.$refs.fileUploader.files = event.dataTransfer.files
+          let totalSize = 0
+          for(let file of this.$refs.fileUploader.files){
+            totalSize += file.size
+          }
+        setTimeout(() => {
+          if(totalSize <= this.freeSpace){
+            document.querySelector('.formOfUploadedFiles').method = "POST"
+            document.querySelector('.formOfUploadedFiles').submit()
+          }
+        }, 2000)
+        // }
     },
     expandSelect(event, fileName, click){
       if(click.includes("left")){

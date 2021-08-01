@@ -1,5 +1,5 @@
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav style="z-index: 2;" class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
         <a class="navbar-brand" href="#">Upcload</a>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
