@@ -513,6 +513,7 @@ export default {
         position: absolute;
         top: ${event.pageY}px;
         left: ${event.pageX}px;
+        z-index: 2;
         box-sizing: border-box;
         padding: 15px;
       `

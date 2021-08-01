@@ -18,34 +18,49 @@ const storage = multer.diskStorage({
         // cb(null, file.originalname)
 
         let indexOfCalls = 0
-        console.log('req.query: ', req.query)
+        // console.log('req.query: ', req.query)
         function dontRepeatFilesNames(changedFileName) {
             indexOfCalls++
+            let filesInDir = []
             fs.readdir(`./uploads/${req.query.owner.split('@')[0]}/`, (err, userFiles) => {
-                if(userFiles.length >= 1){
-                    userFiles.map(userFile => {
-                        console.log('userFile: ', userFile)
-                        if(changedFileName === userFile){
-                            dontRepeatFilesNames(`${file.originalname.split('.')[0]}(${indexOfCalls}).${file.originalname.split('.')[1]}`)
-                        } else {
-                            if(file.mimetype.includes("img")){
-                                fileType = "img"
-                            } else if(file.mimetype.includes("mp4")){
-                                fileType = "mp4"
-                            } else if(file.mimetype.includes("audio")){
-                                fileType = "mp3"
+                filesInDir = userFiles
+                console.log('filesInDir: ', filesInDir)
+                console.log('changedFileName in filesInDir: ', changedFileName in filesInDir)
+                if(filesInDir.length >= 1){
+                    if(filesInDir.includes(changedFileName)){
+                        dontRepeatFilesNames(`${file.originalname.split('.')[0]}(${indexOfCalls}).${file.originalname.split('.')[1]}`)
+                    } else {
+                        let fileType = "img"
+                        if(file.mimetype.includes("img")){
+                            fileType = "img"
+                        } else if(file.mimetype.includes("mp4")){
+                            fileType = "mp4"
+                        } else if(file.mimetype.includes("audio")){
+                            fileType = "mp3"
+                        }
+                        new FileModel({ name: changedFileName, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
+                            if(err){
+                                return res.json({ "status": "error" })
                             }
-                            new FileModel({ name: changedFileName, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
-                                if(err){
-                                    return res.json({ "status": "error" })
-                                }
-                            })
-                            cb(null, changedFileName)
+                        })
+                        cb(null, changedFileName) 
+                    }
+                } else {
+                    let fileType = "img"
+                    if(file.mimetype.includes("img")){
+                        fileType = "img"
+                    } else if(file.mimetype.includes("mp4")){
+                        fileType = "mp4"
+                    } else if(file.mimetype.includes("audio")){
+                        fileType = "mp3"
+                    }
+                    new FileModel({ name: changedFileName, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
+                        if(err){
+                            return res.json({ "status": "error" })
                         }
                     })
-                } else{
-                    cb(null, file.originalname)
-                }
+                    cb(null, changedFileName)
+                }  
             })
         }
         dontRepeatFilesNames(file.originalname)
