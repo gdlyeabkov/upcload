@@ -14,19 +14,35 @@
     </nav>    
 </template>
 <script>
+import * as jwt from 'jsonwebtoken'
 export default {
     props: ["auth"],
+    data(){
+        return {
+            token: '',
+            freeSpace: 0
+        }
+    },
+    mounted(){
+        this.token = window.localStorage.getItem("upcloadsecret")
+        if(this.$route.query.freespace !== null && this.$route.query.freespace !== undefined){
+            this.freeSpace = this.$route.query.freespace
+        }
+    },
     methods: {
         logout(){
             this.token = jwt.sign({
                 useremail: "asd"
             }, 'upcloadsecret', { expiresIn: '5m' })
-            this.$router.push({ name: "UsersLogin" })
+            this.$router.push({ name: "UsersLogin",  })
         },
         goToPage(page){
             console.log('goto')
             if(page.includes('home')){
-                this.$router.push({ name: 'Home', query: { path: 'root' } })
+                jwt.verify(this.token, 'upcloadsecret', (err, decoded) => {
+                    this.$router.push({ name: 'Home', query: { path: 'root', useremail: decoded.useremail, freespace: this.freeSpace } })
+                    window.location.reload()
+                })
             } else if(page.includes('register')){
                 this.$router.push({ name: 'UsersRegistry', query: {  } })
             } else if(page.includes('login')){

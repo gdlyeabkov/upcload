@@ -1,75 +1,79 @@
 <template>
   <div class="app">
-    <Header :auth="true"/>
-    <!-- возможно файлы не до конца принадлежит определенному пользователю -->
-    <!-- <object class="object" data="https://mercurial-diagnostic-glazer.glitch.me/pictures/getpicture?picturename=gleb" width="400" height="300">{{ content }}</object> -->
-    <!-- <iframe class="object" src="./main.txt" width="468" height="60" align="left">
-      Ваш браузер не поддерживает плавающие фреймы!
-    </iframe> -->
-    <p v-if="path !== 'root'" style="margin-left: 35px; display: inline; cursor: pointer; font-size: 24px; color: rgb(165, 165, 165); font-weight: bold;" @click="previousFolder()">..</p>&nbsp;
-    <p style="display: inline; font-size: 24px; color: rgb(165, 165, 165)">{{ path }}</p>
-    <div v-if="allFiles !== null && allFiles.length !== 0">
-      <div v-for="file in allFiles">
-        <input data-selected="false" type="hidden" :value="file._id">
-        <div @contextmenu="expandSelect($event, file.name, 'right')" @dblclick="changePath($event, file.name, file.type)" @click="expandSelect($event, file.name, 'left')" class="card" style="cursor: pointer; float: left; margin: 5px; width: 350px;  height: 250px; ">
-          <h5 class="card-header" style="overflow: hidden;">
-            <!-- <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" /> -->
-            <div v-if="file.type.includes('img')">
-              <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" style="width: 100%; height: 100%;">
-            </div>
-            <div v-else-if="file.type.includes('mp4')">
-              <video autoplay loop style="width: 100%; height: 100%;" controls>
-                <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`"/>
-              </video>
-            </div>
-            <div v-else-if="file.type.includes('mp3')">
-              <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" controls></audio>
-            </div>
-            <p>{{ Math.floor(file.size / 1024) }} Кб</p>
-          </h5>
-          <div class="card-body" style="min-height: 125px;">
-            <div v-if="file.type.includes('group')" style="display: inline;">
+    <div class="componentHeight">
+      <Header :auth="true"/>
+      <!-- возможно файлы не до конца принадлежит определенному пользователю -->
+      <!-- <object class="object" data="https://mercurial-diagnostic-glazer.glitch.me/pictures/getpicture?picturename=gleb" width="400" height="300">{{ content }}</object> -->
+      <!-- <iframe class="object" src="./main.txt" width="468" height="60" align="left">
+        Ваш браузер не поддерживает плавающие фреймы!
+      </iframe> -->
+      <p v-if="path !== 'root'" style="margin-left: 35px; display: inline; cursor: pointer; font-size: 24px; color: rgb(165, 165, 165); font-weight: bold;" @click="previousFolder()">..</p>&nbsp;
+      <p style="display: inline; font-size: 24px; color: rgb(165, 165, 165)">{{ path }}</p>
+      <div v-if="allFiles !== null && allFiles.length !== 0">
+        <div v-for="file in allFiles">
+          <input data-selected="false" type="hidden" :value="file._id">
+          <div @contextmenu="expandSelect($event, file.name, 'right')" @dblclick="changePath($event, file.name, file.type)" @click="expandSelect($event, file.name, 'left')" class="card" style="cursor: pointer; float: left; margin: 5px; width: 350px;  height: 250px; ">
+            <h5 class="card-header" style="overflow: hidden;">
+              <p style="">{{ computeSize(file.size) }} {{ computeMeasure(file.size, 0) }}</p>
+              
+              <!-- <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" /> -->
+              <div v-if="file.type.includes('img')">
+                <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" style="width: 100%; height: 100%;">
+              </div>
+              <div v-else-if="file.type.includes('mp4')">
+                <video autoplay loop style="width: 100%; height: 100%;" controls>
+                  <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`"/>
+                </video>
+              </div>
+              <div v-else-if="file.type.includes('mp3')">
+                <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" controls></audio>
+              </div>
+            </h5>
+            <div class="card-body" style="min-height: 125px;">
+              <div v-if="file.type.includes('group')" style="display: inline;">
+                <span class="material-icons">
+                  folder
+                </span>
+              </div>
+              <div v-else-if="file.type.includes('mp4')" style="display: inline;">
+                <span class="material-icons">
+                  movie
+                </span>
+              </div>
+              <div v-else-if="file.type.includes('img')" style="display: inline;">
               <span class="material-icons">
-                folder
+                image
               </span>
-            </div>
-            <div v-else-if="file.type.includes('mp4')" style="display: inline;">
-              <span class="material-icons">
-                movie
-              </span>
-            </div>
-            <div v-else-if="file.type.includes('img')" style="display: inline;">
-            <span class="material-icons">
-              image
-            </span>
-            </div>
-            <div v-else-if="file.type.includes('mp3')" style="display: inline;">
-              <span class="material-icons">
-                headphones
-              </span>
-            </div>
-            <h5 class="card-title" style="display: inline;">{{ file.name }}</h5>
-            <p class="card-text">Последний раз обновлен {{ new Date().toLocaleDateString() }}.</p>
-          </div> 
+              </div>
+              <div v-else-if="file.type.includes('mp3')" style="display: inline;">
+                <span class="material-icons">
+                  headphones
+                </span>
+              </div>
+              <h5 class="card-title" style="display: inline;">{{ file.name }}</h5>
+              <p class="card-text">Последний раз обновлен {{ new Date().toLocaleDateString() }}.</p>
+            </div> 
+          </div>
         </div>
       </div>
+      <div v-else-if="allFiles !== null && allFiles.length === 0">
+        <p @contextmenu="expandSelect($event, 'mockFileName', 'right')" style="cursor: pointer; text-align: center; font-size: 24px; color: rgb(215, 215, 215)">Вы не загрузили ещё ни 1 файл.</p>
+      </div>
+      <br style="clear: both;"/>
+      <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`https://confirmed-giant-utahraptor.glitch.me/files/upload/?filepath=${path}&owner=${useremail}`">
+      <!-- <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`http://localhost:4000/files/upload/?filepath=${path}&owner=${useremail}`"> -->
+        <input style="display: none;" id="filename" type="text" name="name" />
+        <input style="display: none;" id="filesize" type="number" name="size" />
+        <input style="display: none;" id="filetype" type="text" name="type" />
+        <label for="fileuploader" style="z-index: 15; cursor: pointer; font-size: 124px; position: fixed; top: calc(100% - 25%); left: calc(100% - 15%);" class="material-icons cloud" ref="cloud">
+          cloud_upload
+        </label>
+        <input accept=".png" name="myFiles" ref="fileUploader" @click.prevent="openpanel()" style="display: none;" id="fileuploader" type="file" multiple />
+        <!-- <input accept="image/png, video/mp4, audio/mp3," name="myFiles" ref="fileUploader" @change="uploadFiles($event)" style="display: none;" id="fileuploader" type="file" multiple /> -->
+      </form>
     </div>
-    <div v-else-if="allFiles !== null && allFiles.length === 0">
-      <p @contextmenu="expandSelect($event, 'mockFileName', 'right')" style="cursor: pointer; text-align: center; font-size: 24px; color: rgb(215, 215, 215)">Вы не загрузили ещё ни 1 файл.</p>
-    </div>
-    <br style="clear: both;"/>
-    <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`https://confirmed-giant-utahraptor.glitch.me/files/upload/?filepath=${path}&owner=${useremail}`">
-    <!-- <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`http://localhost:4000/files/upload/?filepath=${path}&owner=${useremail}`"> -->
-      <input style="display: none;" id="filename" type="text" name="name" />
-      <input style="display: none;" id="filesize" type="number" name="size" />
-      <input style="display: none;" id="filetype" type="text" name="type" />
-      <label for="fileuploader" style="cursor: pointer; font-size: 124px; position: fixed; top: calc(100% - 25%); left: calc(100% - 15%);" class="material-icons cloud" ref="cloud">
-        cloud_upload
-      </label>
-      <input accept="image/png, audio/mpeg, video/mp4" name="myFiles" ref="fileUploader" @change="uploadFiles($event)" style="display: none;" id="fileuploader" type="file" multiple />
-    </form>
-    <Footer/>
-    <div @drop.prevent="drop_handler($event)" @dragover="dragover_handler($event)" @click="clearSelection($event)" class="workSpace" style="width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: -5;"></div>
+    <Footer :componentHeight="componentHeight"/>
+    <div @drop.prevent="drop_handler($event)" @dragenter="dragover_handler($event)" @click="clearSelection($event)" class="workSpace" style="width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: -5;"></div>
     <div class="createFolderModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
       <div class="alert alert-primary" role="alert" style="min-width: 550px;">
         <span @click="closeModal($event)" style=" font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
@@ -176,10 +180,14 @@ export default {
       },
       token: '',
       useremail: '',
-      freeSpace: 157286400
+      freeSpace: 157286400,
+      filesList: [],
+      componentHeight: 0
     }
   },
   mounted(){
+    this.componentHeight = document.querySelector('.componentHeight').getBoundingClientRect().bottom
+    console.log('this.componentHeight: ', this.componentHeight)
     this.token = window.localStorage.getItem("upcloadsecret")
     this.freeSpace = this.$route.query.freespace
     jwt.verify(this.token, 'upcloadsecret', (err, decoded) => {
@@ -210,6 +218,7 @@ export default {
         }
         
         fetch(`https://upcload.herokuapp.com/home/?useremail=${decoded.useremail}`, {
+        // fetch(`http://localhost:4000/home/?useremail=${decoded.useremail}`, {
           mode: 'cors',
           method: 'GET'
         }).then(response => response.body).then(rb  => {
@@ -255,6 +264,60 @@ export default {
     })
   },
   methods: {
+    openpanel(){
+      window.showOpenFilePicker({     
+        types: [
+          {
+            description: 'Supported Files',
+            accept: {
+              'audio/mp3': ['.mp3'],
+              'image/png': ['.png'],
+              'video/mp4': ['.mp4'],
+            },
+          },
+        ],
+        excludeAcceptAllOption: true,
+        multiple: true,
+      }).then(async files => {
+        console.log('files: ', files)
+        for(let file of files){
+          this.filesList.push(await file.getFile())
+        }
+        console.log('this.filesList: ', this.filesList)
+        // this.$refs.fileUploader.files = this.filesList
+        this.$refs.fileUploader.files = new FileListItems(
+          this.filesList
+        )
+        this.uploadFiles(this.$event)
+      }).catch(e => console.log('windowerror: ', e))
+    },
+    computeMeasure(size, cursorOfMeasure){
+      let cursor = cursorOfMeasure
+      cursor++
+      console.log('cursor: ', cursor)
+      if(Math.floor(size / 1024) > 1){
+        return this.computeMeasure(size / 1024, cursor)
+      } else if(Math.floor(size / 1024) <= 1){
+          console.log('----------------------------------------')
+          if(cursor === 1){
+            return "б"
+          } else if(cursor === 2){
+            return "Кб"
+          } else if(cursor === 3){
+            return "Мб"
+          } else if(cursor === 4){
+            return "Гб"
+          }
+          
+      }
+    },
+    computeSize (size)  {
+      if(Math.floor(size / 1024) > 1){
+        return this.computeSize(size / 1024)
+      } else if((size / 1024) <= 1){
+        return Math.floor(size)
+      }
+    },
     showFileModal(event, free){
       if(this.selection.length >= 1 && ((event.code == 'NumpadEnter' || event.code == 'Enter') || free)){
         document.querySelector('.fileModal').style.display = `flex`
@@ -346,6 +409,7 @@ export default {
       console.log("selection: ", this.selection)
     },
     dragover_handler(event){
+      console.log('drag')
       event.preventDefault()
       this.$refs.cloud.style.fontSize = '256px'
       this.$refs.cloud.style.top = 'calc(100% - 35%)'
@@ -552,6 +616,14 @@ export default {
 //   document.querySelector('.formOfUploadedFiles').method = "POST"
 //   document.querySelector('.formOfUploadedFiles').submit()
 // }
+
+function FileListItems(files){
+  var b = new ClipboardEvent("").clipboardData || new DataTransfer()
+  for (var i = 0, len = files.length; i<len; i++){
+    b.items.add(files[i])
+  }
+  return b.files
+}
 </script>
 <style scoped>
   .plate {

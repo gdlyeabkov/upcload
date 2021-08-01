@@ -1,19 +1,21 @@
 <template>
-  <div style=" background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: -5; min-height: 750px;">
-    <Header :auth="false"/>
-    <div class="customCardGroup">
-      <img src="https://www.gstatic.com/android/market_images/web/play_prism_hlock_2x.png" width="30%" height="30%" alt="">
-      <h1 class="h3 mb-3 font-weight-normal">Войдите</h1>
-      <label for="inputEmail" class="sr-only">Email</label>
-      <input v-model="useremail" type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
-      <label for="inputPassword" class="sr-only">Password</label>
-      <input v-model="userpassword" type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
-      <div class="checkbox mb-3">
+  <div style="background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: -5; min-height: 750px;">
+    <div class="componentHeight">
+      <Header :auth="false"/>
+      <div class="customCardGroup">
+        <img src="../assets/cloudnew.png" width="30%" height="30%" alt="">
+        <h1 class="h3 mb-3 font-weight-normal">Войдите</h1>
+        <label for="inputEmail" class="sr-only">Email</label>
+        <input v-model="useremail" type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input v-model="userpassword" type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+        <div class="checkbox mb-3">
+        </div>
+        <button class="btn btn-lg btn-primary btn-block loginBtn" @click="login()">Войти</button>
+        <div class="customErros">{{ errors }}</div>
       </div>
-      <button class="btn btn-lg btn-primary btn-block loginBtn" @click="login()">Войти</button>
-      <div class="customErros">{{ errors }}</div>
     </div>
-    <Footer/>
+    <Footer :componentHeight="componentHeight"/>
   </div>
 </template>
 
@@ -31,10 +33,13 @@ export default {
       userpassword: '',
       errors: "",
       token: '',
-      freespace: 0
+      freespace: 0,
+      componentHeight: 0
     }
   },
   mounted(){
+    this.componentHeight = document.querySelector('.componentHeight').getBoundingClientRect().bottom
+    console.log('this.componentHeight: ', this.componentHeight)
     if(this.$route.query.freespace === undefined || this.$route.query.freespace === null){
       this.freespace = 104857600
     } else {

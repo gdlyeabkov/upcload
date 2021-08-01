@@ -1,25 +1,27 @@
 <template>
   <div style=" background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: -5; min-height: 750px;">
-    <Header :auth="false"/>
-    <div class="main">
-      <img src="https://www.gstatic.com/android/market_images/web/play_prism_hlock_2x.png" width="30%" height="30%" alt="">            
-      <h1 class="h3 mb-3 font-weight-normal">Зарегестрируйтесь</h1>
-      
-      <label for="inputEmail" class="sr-only">Email</label>
-      <input v-model="useremail" type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
-      <label for="inputPassword" class="sr-only">Password</label>
-      <input v-model="userpassword" type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
-      <label for="inputEmail" class="sr-only">Name</label>
-      <input  v-model="username" type="text" id="inputEmail" class="form-control" placeholder="Name" required="" autofocus="">
-      <label for="inputEmail" class="sr-only">Age</label>
-      <input  v-model="userage" type="number" id="inputEmail" class="form-control" placeholder="Age" required="" autofocus="">
-      
-      <div class="checkbox mb-3">
+    <div class="componentHeight">
+      <Header :auth="false"/>
+      <div class="main">
+        <img src="../assets/cloudnew.png" width="30%" height="30%" alt="">            
+        <h1 class="h3 mb-3 font-weight-normal">Зарегестрируйтесь</h1>
+        
+        <label for="inputEmail" class="sr-only">Email</label>
+        <input v-model="useremail" type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input v-model="userpassword" type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+        <label for="inputEmail" class="sr-only">Name</label>
+        <input  v-model="username" type="text" id="inputEmail" class="form-control" placeholder="Name" required="" autofocus="">
+        <label for="inputEmail" class="sr-only">Age</label>
+        <input  v-model="userage" type="number" id="inputEmail" class="form-control" placeholder="Age" required="" autofocus="">
+        
+        <div class="checkbox mb-3">
+        </div>
+        <button @click="register()" class="btn btn-lg btn-primary btn-block registerBtn">Зарегестрироваться</button>
+        <div class="customErros">{{ errors }}</div>
       </div>
-      <button @click="register()" class="btn btn-lg btn-primary btn-block registerBtn">Зарегестрироваться</button>
-      <div class="customErros">{{ errors }}</div>
     </div>
-    <Footer/>
+    <Footer :componentHeight="componentHeight"/>
   </div>
 </template>
 
@@ -38,8 +40,13 @@ export default {
       useremail: '',
       userpassword: '',
       username: '',
-      userage: 0
+      userage: 0,
+      componentHeight: 0
     }
+  },
+  mounted(){
+    this.componentHeight = document.querySelector('.componentHeight').getBoundingClientRect().bottom
+    console.log('this.componentHeight: ', this.componentHeight)
   },
   methods:{
     goToPage(page){
