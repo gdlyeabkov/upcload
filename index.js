@@ -1,3 +1,4 @@
+process.setMaxListeners(1500);
 const diskinfo = require('diskinfo')
 const serveStatic = require('serve-static')
 const AdmZip = require('adm-zip')
@@ -11,7 +12,7 @@ const app = express()
 const multer  = require('multer')
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, 'uploads')
+      cb(null, `uploads/${req.query.owner.split('@')[0]}/`)
     },
     filename: function (req, file, cb) {
         // cb(null, file.originalname)
@@ -27,6 +28,18 @@ const storage = multer.diskStorage({
                         if(changedFileName === userFile){
                             dontRepeatFilesNames(`${file.originalname.split('.')[0]}(${indexOfCalls}).${file.originalname.split('.')[1]}`)
                         } else {
+                            if(file.mimetype.includes("img")){
+                                fileType = "img"
+                            } else if(file.mimetype.includes("mp4")){
+                                fileType = "mp4"
+                            } else if(file.mimetype.includes("audio")){
+                                fileType = "mp3"
+                            }
+                            new FileModel({ name: changedFileName, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
+                                if(err){
+                                    return res.json({ "status": "error" })
+                                }
+                            })
                             cb(null, changedFileName)
                         }
                     })
@@ -138,26 +151,26 @@ app.post('/files/upload', [(req, res, next) => {
     //     console.log("Error to upload file ")
     // }
     console.log("req.files: ", req.files)
-    for(let file of req.files){
-        let fileType = "img"
-        if(file.mimetype.includes("img")){
-            fileType = "img"
-        } else if(file.mimetype.includes("mp4")){
-            fileType = "mp4"
-        } else if(file.mimetype.includes("audio")){
-            fileType = "mp3"
-        }
-        fs.rename(`./uploads/${file.filename}`, `./uploads/${req.query.owner.split('@')[0]}/${file.filename}`, (err, file) => {
-            if(err) {
-                return res.json({ "status": "error" })
-            }
-        })
-        await new FileModel({ name: file.filename, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
-            if(err){
-                return res.json({ "status": "error" })
-            }
-        })
-    }
+    // for(let file of req.files){
+    //     let fileType = "img"
+    //     if(file.mimetype.includes("img")){
+    //         fileType = "img"
+    //     } else if(file.mimetype.includes("mp4")){
+    //         fileType = "mp4"
+    //     } else if(file.mimetype.includes("audio")){
+    //         fileType = "mp3"
+    //     }
+        // fs.rename(`./uploads/${file.filename}`, `./uploads/${req.query.owner.split('@')[0]}/${file.filename}`, (err, file) => {
+        //     if(err) {
+        //         return res.json({ "status": "error" })
+        //     }
+        // })
+        // await new FileModel({ name: file.filename, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
+        //     if(err){
+        //         return res.json({ "status": "error" })
+        //     }
+        // })
+    // }
     let freespace = 0
     diskinfo.getDrives((err, aDrives) => {
         if(err) {
