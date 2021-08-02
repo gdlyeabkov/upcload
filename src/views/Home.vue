@@ -51,7 +51,9 @@
                 </span>
               </div>
               <h5 class="card-title" style="display: inline;">{{ file.name }}</h5>
-              <p class="card-text">Последний раз обновлен {{ file.updated.toLocaleString() }}.</p>
+              <div v-if="file !== null && file !== undefined">
+                <p class="card-text">Последний раз обновлен {{ file.updated.toLocaleString() }}.</p>
+              </div>
             </div> 
           </div>
         </div>
@@ -148,7 +150,9 @@
         <p>
           Задана ссылка: {{ currentOpenFile.linked }}
         </p>
-        <p>Последний раз обновлен {{ currentOpenFile.updated.toLocaleString() }}.</p>
+        <div v-if="currentOpenFile !== null && currentOpenFile !== undefined">
+          <p>Последний раз обновлен {{ currentOpenFile.updated.toLocaleString() }}.</p>
+        </div>
       </div>
     </div>
   </div>
