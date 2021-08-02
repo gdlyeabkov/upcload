@@ -1,7 +1,7 @@
 <template>
   <div style=" background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: -5; min-height: 750px;">
     <div class="componentHeight">
-      <Header :auth="false"/>
+      <Header :auth="false" :user="''"/>
       <div class="main">
         <img src="../assets/cloudnew.png" width="30%" height="30%" alt="">            
         <h1 class="h3 mb-3 font-weight-normal">Зарегестрируйтесь</h1>

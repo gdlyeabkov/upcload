@@ -35,6 +35,7 @@ const storage = multer.diskStorage({
                         } else if(file.mimetype.includes("audio")){
                             fileType = "mp3"
                         }
+                        console.log('file: ', file)
                         new FileModel({ name: changedFileName, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
                             if(err){
                                 return res.json({ "status": "error" })
@@ -118,6 +119,10 @@ const UsersSchema = new mongoose.Schema({
     password: String,
     name: String,
     age: Number,
+    updated: {
+        type: Date,
+        default: Date.now
+    }
 },
 { collection : 'myusers' });
 const UsersModel = mongoose.model('UsersModel', UsersSchema, 'myusers');

@@ -1,7 +1,7 @@
 <template>
   <div class="app">
     <div class="componentHeight">
-      <Header :auth="true"/>
+      <Header :auth="true" :user="useremail"/>
       <!-- возможно файлы не до конца принадлежит определенному пользователю -->
       <!-- <object class="object" data="https://mercurial-diagnostic-glazer.glitch.me/pictures/getpicture?picturename=gleb" width="400" height="300">{{ content }}</object> -->
       <!-- <iframe class="object" src="./main.txt" width="468" height="60" align="left">
@@ -436,20 +436,23 @@ export default {
       this.$refs.cloud.style.left = 'calc(100% - 15%)'
       console.log('event.dataTransfer.files: ', event.dataTransfer.files)
       // this.$refs.droparea.style.display = "none"
-        // if(event.dataTransfer.files.every((file, fileIndex, fileList) => {
-          // return file.type.includes('png') || file.type.includes('mp4') || file.type.includes('mp3')})){
+        if(Array.from(event.dataTransfer.files).every((file, fileIndex, fileList) => {
+        return file.type.includes('png') || file.type.includes('mp4') || file.type.includes('mp3')})){
+          console.log("все файлы подходят")
           this.$refs.fileUploader.files = event.dataTransfer.files
           let totalSize = 0
           for(let file of this.$refs.fileUploader.files){
             totalSize += file.size
           }
-        setTimeout(() => {
-          // if(totalSize <= this.freeSpace){
-            document.querySelector('.formOfUploadedFiles').method = "POST"
-            document.querySelector('.formOfUploadedFiles').submit()
-          // }
-        }, 2000)
-        // }
+          setTimeout(() => {
+            // if(totalSize <= this.freeSpace){
+              document.querySelector('.formOfUploadedFiles').method = "POST"
+              document.querySelector('.formOfUploadedFiles').submit()
+            // }
+          }, 2000)
+        } else {
+          console.log('Вы пытаетесь загрузить файлы с не подходящим расширением')
+        }
     },
     expandSelect(event, fileName, click){
       if(click.includes("left")){
@@ -505,7 +508,9 @@ export default {
         this.menuItems.push("Открыть")
       }
       this.menuItems.push("Создать папку")
-      this.menuItems.push("Удалить")
+      if(this.selection.length >= 1){
+        this.menuItems.push("Удалить")
+      }
       if(this.selection.length === 1){
         this.menuItems.push("Сделать ссылкой")
         this.menuItems.push("Скачать")

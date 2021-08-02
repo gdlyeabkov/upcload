@@ -1,22 +1,28 @@
 <template>
     <nav style="z-index: 2;" class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-        <a class="navbar-brand" href="#">Upcload</a>
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-            <div class="navbar-nav">
-                <a v-if="auth" style="cursor: pointer;" @click="goToPage('home')" class="nav-link active" aria-current="page">Домой</a>
-                <a v-if="!auth" style="cursor: pointer;" @click="goToPage('register')" class="nav-link active" aria-current="page">Регистрация</a>
-                <a v-if="!auth" style="cursor: pointer;" @click="goToPage('login')" class="nav-link active" aria-current="page">Авторизация</a>
-                <a v-if="auth" style="cursor: pointer;" @click="goToPage('login')" class="nav-link active" aria-current="page">Выйти</a>
+            <a class="navbar-brand" href="#">Upcload</a>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                    <a v-if="auth" style="cursor: pointer;" @click="goToPage('home')" class="nav-link active" aria-current="page">Домой</a>
+                    <a v-if="!auth" style="cursor: pointer;" @click="goToPage('register')" class="nav-link active" aria-current="page">Регистрация</a>
+                    <a v-if="!auth" style="cursor: pointer;" @click="goToPage('login')" class="nav-link active" aria-current="page">Авторизация</a>
+                    <a v-if="auth" style="cursor: pointer;" @click="goToPage('login')" class="nav-link active" aria-current="page">Выйти</a>
+                </div>
             </div>
-        </div>
+            <div v-if="auth">
+                <span @click="logout()" style="cursor: pointer;" class="material-icons">
+                    meeting_room
+                </span>
+                {{ user }}
+            </div>
         </div>
     </nav>    
 </template>
 <script>
 import * as jwt from 'jsonwebtoken'
 export default {
-    props: ["auth"],
+    props: [ "auth", "user" ],
     data(){
         return {
             token: '',
