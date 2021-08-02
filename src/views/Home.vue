@@ -186,6 +186,7 @@ export default {
       propsFileSize: 0,
       propsFileUpdated: Date.now,
       currentOpenFile: {
+        updated: Date.now,
         type: 'img',
         link: '##############'
       },
