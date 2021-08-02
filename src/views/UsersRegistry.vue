@@ -86,10 +86,14 @@ export default {
         })
         .then(result => {
           console.log(JSON.parse(result))
-          if(JSON.parse(result).status.includes("OK")){
-            this.$router.push({ 'name': "UsersLogin" })
-          } else if(JSON.parse(result).status.includes("Error")){
-            this.errors = "Такой пользователь уже существует!!!"
+          if(this.useremail.includes("@")){
+            if(JSON.parse(result).status.includes("OK")){
+              this.$router.push({ 'name': "UsersLogin" })
+            } else if(JSON.parse(result).status.includes("Error")){
+              this.errors = "Такой пользователь уже существует!!!"
+            }
+          } else if(!this.useremail.includes("@")){
+            this.errors = "Вы не указали email!!!"
           }
         });
       }
