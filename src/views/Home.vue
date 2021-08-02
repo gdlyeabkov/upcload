@@ -124,7 +124,7 @@
         <span @click="closeModal($event)" style=" font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
           cancel
         </span>
-        Сгенерировать ссылка<br/>
+        Сгенерированная ссылка: <br/>
         <a :href="currentOpenFile.link">{{ currentOpenFile.link }}</a>
       </div>
     </div>
@@ -175,21 +175,15 @@ export default {
       allFiles: [],
       selection: [],
       contextWindow: null,
-      menuItems: [
-        "Открыть",
-        "Создать папку",
-        "Удалить",
-        "Сделать ссылкой",
-        "Скачать",
-        "Свойства"
-      ],
+      menuItems: [],
       path: "root/",
       folderName: '',
       content: '',
       propsFileSize: 0,
       propsFileUpdated: Date.now,
       currentOpenFile: {
-        type: 'img'
+        type: 'img',
+        link: '##############'
       },
       token: '',
       useremail: '',
@@ -208,6 +202,8 @@ export default {
         // логика перенаправления
         if(this.$route.query.redirectroute.includes('users/login') || this.$route.query.redirectroute.includes('users/register')){
           this.$router.push({ path: this.$route.query.redirectroute })
+        } else if(this.$route.query.redirectroute.includes('links')){
+          this.$router.push({ name: "Home", query: { useremail: this.$route.query.owner, path: this.$route.query.path } })
         } else if(!this.$route.query.redirectroute.includes('users/login') && !this.$route.query.redirectroute.includes('users/register')){
           this.$router.push({ name: "Home", query: { useremail: decoded.useremail, path: 'root', freespace: this.freeSpace } })
         }
@@ -504,6 +500,17 @@ export default {
     }
     if(this.selection.length >= 1 || this.allFiles.length <= 0){
       this.contextWindow = document.createElement("div")
+      this.menuItems = []
+      if(this.selection.length === 1){
+        this.menuItems.push("Открыть")
+      }
+      this.menuItems.push("Создать папку")
+      this.menuItems.push("Удалить")
+      if(this.selection.length === 1){
+        this.menuItems.push("Сделать ссылкой")
+        this.menuItems.push("Скачать")
+        this.menuItems.push("Свойства")
+      }
       this.contextWindow.classList += "contextMenu"
       this.contextWindow.style = `
         min-width: 285px;
@@ -535,40 +542,40 @@ export default {
                     } else if(event.target.textContent.includes("Удалить")){
                       console.log('this.selection.join(,): ', this.selection.join(','))
                       fetch(`https://upcload.herokuapp.com/files/delete/?fileids=${this.selection.join(',')}&owner=${this.useremail}`, {
-                          mode: 'cors',
-                          method: 'GET'
-                        }).then(response => response.body).then(rb  => {
-                            const reader = rb.getReader()
-                            return new ReadableStream({
-                            start(controller) {
-                                function push() {
-                                reader.read().then( ({done, value}) => {
-                                    if (done) {
-                                        console.log('done', done);
-                                        controller.close();
-                                        return;
-                                    }
-                                    controller.enqueue(value);
-                                    console.log(done, value);
-                                    push();
-                                })
-                                }
-                                push();
-                            }
-                            });
-                        }).then(stream => {
-                            return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
-                        })
-                        .then(result => {
-                          console.log(JSON.parse(result))
-                          window.location.reload()
-                          this.allFiles = JSON.parse(result).allFiles.filter(file => {
-                          if(file.path === this.path){
-                            return true
-                          } else if(this.path !== file.path){
-                            return false
+                        mode: 'cors',
+                        method: 'GET'
+                      }).then(response => response.body).then(rb  => {
+                          const reader = rb.getReader()
+                          return new ReadableStream({
+                          start(controller) {
+                              function push() {
+                              reader.read().then( ({done, value}) => {
+                                  if (done) {
+                                      console.log('done', done);
+                                      controller.close();
+                                      return;
+                                  }
+                                  controller.enqueue(value);
+                                  console.log(done, value);
+                                  push();
+                              })
+                              }
+                              push();
                           }
-                        });
+                          });
+                      }).then(stream => {
+                          return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+                      })
+                      .then(result => {
+                        console.log(JSON.parse(result))
+                        window.location.reload()
+                        // this.allFiles = JSON.parse(result).allFiles.filter(file => {
+                        //   if(file.path === this.path){
+                        //     return true
+                        //   } else if(this.path !== file.path){
+                        //     return false
+                        //   }
+                        // })
                       })
                     } else if(event.target.textContent.includes("Скачать")){
                       this.download(event, fileName)
@@ -606,8 +613,12 @@ export default {
                             return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
                         })
                         .then(result => {
+                          console.log("JSON.parse(result): ", JSON.parse(result))
+                          console.log("this.currentOpenFile: ", this.currentOpenFile)
+                          this.currentOpenFile[0].link = JSON.parse(result).link
+                          this.currentOpenFile = this.currentOpenFile[0]
                           // window.location.reload()  
-                        });
+                        })
                     } else if(event.target.textContent.includes("Свойства")){
                         this.currentOpenFile = this.allFiles.filter((file) => {
                           if(file._id === this.selection[0]){

@@ -210,32 +210,84 @@ app.get('/files/delete', (req, res) => {
     res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
 
-    let fileids = req.query.fileids.split(',')
-    let countOfFiles = fileids.length
-    console.log('fileids: ', fileids)
-        for(let fileIndex = 0; fileIndex < countOfFiles; fileIndex++){
-            let queryOfFile = FileModel.findOne({"_id": fileids[fileIndex] })
+    // let fileids = req.query.fileids.split(',')
+    // let countOfFiles = fileids.length
+    // console.log('fileids: ', fileids)
+    // for(let fileIndex = 0; fileIndex < countOfFiles; fileIndex++){
+    //     let queryOfFile = FileModel.findOne({"_id": fileids[fileIndex] })
+    //     queryOfFile.exec((err, file) => {
+    //         if(!file.type.includes('group')){
+    //             console.log("file: ", file)
+    //             if(err){
+    //                 return res.json({ 'status': 'error' })
+    //             }
+    //             fs.unlink(`uploads/${req.query.owner.split('@')[0]}/${file.name}`, (err) => {
+    //                 if(err) {
+    //                     return res.json({ 'status': 'error' })
+    //                 }
+    //             })  
+    //         }
+    //     })
+    // }
+    // let query = FileModel.find({ })
+    // query.exec((err, allFiles) => {
+    //     let queryOfDelete = FileModel.deleteMany({ "_id": { $in: fileids } })
+    //     queryOfDelete.exec((err, data) => {
+    //         if(err){
+    //             return res.json({ 'status': 'error' })
+    //         }
+    //         return res.json({ 'allFiles': allFiles })
+    //     })
+    // })
+
+    console.log('req.query.fileids.split(,): ', req.query.fileids.split(','))
+    if(req.query.fileids.includes(',')){
+        for(let fileId of req.query.fileids.split(',')){
+            let queryOfFile = FileModel.findOne({"_id": fileId })
             queryOfFile.exec((err, file) => {
+                if(err){
+                    return res.json({ 'status': 'error' })
+                }
                 if(!file.type.includes('group')){
-                    console.log("file: ", file)
+                    fs.unlink(`uploads/${req.query.owner.split('@')[0]}/${file.name}`, (err) => {
+                        if(err){
+                            return res.json({ 'status': 'error' })
+                        }
+                    })
+                }
+                let queryOfDelete = FileModel.deleteOne({ "_id": { $in: req.query.fileids.split(',') } })
+                queryOfDelete.exec((err, data) => {
                     if(err){
                         return res.json({ 'status': 'error' })
                     }
-                    fs.unlink(`uploads/${req.query.owner.split('@')[0]}/${file.name}`, (err) => {
-                        if(err) {
-                            return res.json({ 'status': 'error' })
-                        }
-                    })  
-                }
+                })
+
             })
         }
-        let query = FileModel.find({ })
-        query.exec((err, allFiles) => {
-            let queryOfDelete = FileModel.deleteMany({ "_id": { $in: fileids } })
+        return res.json({ 'status': 'OK' })
+    } else if(!req.query.fileids.includes(',')){
+        let queryOfFile = FileModel.findOne({"_id": req.query.fileids })
+        queryOfFile.exec((err, file) => {
+            if(err){
+                return res.json({ 'status': 'error' })
+            }
+            if(!file.type.includes('group')){
+                fs.unlink(`uploads/${req.query.owner.split('@')[0]}/${file.name}`, (err) => {
+                    if(err){
+                        return res.json({ 'status': 'error' })
+                    }
+                })
+            }
+            let queryOfDelete = FileModel.deleteOne({ "_id": req.query.fileids })
             queryOfDelete.exec((err, data) => {
-                return res.json({ allFiles: allFiles })
+                if(err){
+                    return res.json({ 'status': 'error' })
+                }
+                return res.json({ 'status': 'OK' })
             })
-    })
+        })
+    }
+
 })
 
 app.get('/files/createfolder', (req,res)=>{
@@ -339,6 +391,13 @@ app.get('/files/allocate', (req, res) => {
 })
 
 app.get('/files/generatelink', async (req, res)=>{
+    
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    
+
     let encodedLink = "#"
     let alphabet = "abcdefghjiklmnoprstuvwxyz"
     
@@ -352,14 +411,14 @@ app.get('/files/generatelink', async (req, res)=>{
     let query = FileModel.findOneAndUpdate({ _id: req.query.fileid }, {
         $set: {
             "linked": "true",
-            "link": encodedLink
+            "link": `https://upcload.herokuapp.com/links/${encodedLink}`
         }
     })
     query.exec((err, file) => {
         if(err){
             return res.json({ 'status': "error" })
         }
-        return res.json({ 'status': "OK" })
+        return res.json({ 'status': "OK", "link": `https://upload.herokuapp.com/links/${encodedLink}` })
     })
 })
 
@@ -451,7 +510,26 @@ app.get('/files/downloads', (req, res)=>{
 })
 
 app.get('**', (req, res) => {
+    
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    
     console.log('redirect')
+    console.log('req.path: ', req.path)
+    if(req.path.includes('links')){
+        let queryOfFile = FileModel.find({ 'link': req.query.path })
+        queryOfFile.exec((err, file) => {
+            if (err){
+                // return res.redirect(`http://localhost:8080/?redirectroute=${req.path}`)
+                return res.redirect(`/?redirectroute=${req.path}`)
+            }
+            // return res.redirect(`http://localhost:8080/?redirectroute=${req.path}&owner=${file.owner}&path=${file.path}`, 300)
+            return res.redirect(`/?redirectroute=${req.path}&owner=${file.owner}&path=${file.path}`)
+        })
+    }
+    // return res.redirect(`http://localhost:8080/?redirectroute=${req.path}`)
     return res.redirect(`/?redirectroute=${req.path}`)
 })
 

@@ -83,13 +83,17 @@ export default {
       })
       .then(result => {
         console.log(JSON.parse(result))
-        if(JSON.parse(result).status.includes("OK")){
-          this.token = jwt.sign({
-            useremail: this.useremail
-            }, 'upcloadsecret', { expiresIn: '5m' })
-          localStorage.setItem('upcloadsecret', this.token)
-          this.$router.push({ 'name': "Home", query: { "useremail": this.useremail, "path": "root", "freespace": this.freespace } })
-        } else if(JSON.parse(result).status.includes("Error")){
+        if(this.useremail.includes("@")){
+          if(JSON.parse(result).status.includes("OK")){
+            this.token = jwt.sign({
+              useremail: this.useremail
+              }, 'upcloadsecret', { expiresIn: '5m' })
+            localStorage.setItem('upcloadsecret', this.token)
+            this.$router.push({ 'name': "Home", query: { "useremail": this.useremail, "path": "root", "freespace": this.freespace } })
+          } else if(JSON.parse(result).status.includes("Error")){
+            this.errors = "Такого пользователя не существует!!!"
+          }
+        } else if(!this.useremail.includes("@")){
           this.errors = "Такого пользователя не существует!!!"
         }
       });
