@@ -535,7 +535,7 @@ app.get('**', (req, res) => {
         })
     }
     // return res.redirect(`http://localhost:8081/?redirectroute=${req.path}`)
-    return res.redirect(`/?redirectroute=${req.path}`)
+    return res.redirect(`/?owner=${file.owner}&path=${file.path}&redirectroute=https://upcload.herokuapp.com${req.path}`)
 })
 
 const port = process.env.PORT || 8080
