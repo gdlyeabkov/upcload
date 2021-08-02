@@ -528,10 +528,10 @@ app.get('**', (req, res) => {
         queryOfFile.exec((err, file) => {
             if (err){
                 // return res.redirect(`http://localhost:8081/?redirectroute=${req.path}`)
-                return res.redirect(`/?redirectroute=${req.path}`)
+                return res.redirect(`/?owner=${file.owner}&path=${file.path}&redirectroute=https://upcload.herokuapp.com${req.path}`)
             }
             // return res.redirect(`http://localhost:8081/?redirectroute=http://localhost:8081${req.path}&owner=${file.owner}&path=${file.path}`, 300)
-            return res.redirect(`/?redirectroute=https://upcload.herokuapp.com${req.path}&owner=${file.owner}&path=${file.path}`)
+            return res.redirect(`/?owner=${file.owner}&path=${file.path}&redirectroute=https://upcload.herokuapp.com${req.path}`)
         })
     }
     // return res.redirect(`http://localhost:8081/?redirectroute=${req.path}`)

@@ -51,7 +51,7 @@
                 </span>
               </div>
               <h5 class="card-title" style="display: inline;">{{ file.name }}</h5>
-              <p class="card-text">Последний раз обновлен {{ file.updated }}.</p>
+              <p class="card-text">Последний раз обновлен {{ file.updated.toLocaleString() }}.</p>
             </div> 
           </div>
         </div>
@@ -148,7 +148,7 @@
         <p>
           Задана ссылка: {{ currentOpenFile.linked }}
         </p>
-        <p>Последний раз обновлен {{ currentOpenFile.updated }}.</p>
+        <p>Последний раз обновлен {{ currentOpenFile.updated.toLocaleString() }}.</p>
       </div>
     </div>
   </div>
