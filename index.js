@@ -109,6 +109,10 @@ const FileSchema = new mongoose.Schema({
     path: {
         type: String,
         default: "root"
+    },
+    updated: {
+        type: Date,
+        default: Date.now
     }
 });
 
@@ -118,11 +122,7 @@ const UsersSchema = new mongoose.Schema({
     email: String,
     password: String,
     name: String,
-    age: Number,
-    updated: {
-        type: Date,
-        default: Date.now
-    }
+    age: Number
 },
 { collection : 'myusers' });
 const UsersModel = mongoose.model('UsersModel', UsersSchema, 'myusers');
@@ -423,7 +423,7 @@ app.get('/files/generatelink', async (req, res)=>{
         if(err){
             return res.json({ 'status': "error" })
         }
-        return res.json({ 'status': "OK", "link": `https://upload.herokuapp.com/links/${encodedLink}` })
+        return res.json({ 'status': "OK", "link": `https://upcload.herokuapp.com/links/${encodedLink}` })
     })
 })
 
@@ -527,14 +527,14 @@ app.get('**', (req, res) => {
         let queryOfFile = FileModel.find({ 'link': req.query.path })
         queryOfFile.exec((err, file) => {
             if (err){
-                // return res.redirect(`http://localhost:8080/?redirectroute=${req.path}`)
+                // return res.redirect(`http://localhost:8081/?redirectroute=${req.path}`)
                 return res.redirect(`/?redirectroute=${req.path}`)
             }
-            // return res.redirect(`http://localhost:8080/?redirectroute=${req.path}&owner=${file.owner}&path=${file.path}`, 300)
-            return res.redirect(`/?redirectroute=${req.path}&owner=${file.owner}&path=${file.path}`)
+            // return res.redirect(`http://localhost:8081/?redirectroute=http://localhost:8081${req.path}&owner=${file.owner}&path=${file.path}`, 300)
+            return res.redirect(`/?redirectroute=https://upcload.herokuapp.com${req.path}&owner=${file.owner}&path=${file.path}`)
         })
     }
-    // return res.redirect(`http://localhost:8080/?redirectroute=${req.path}`)
+    // return res.redirect(`http://localhost:8081/?redirectroute=${req.path}`)
     return res.redirect(`/?redirectroute=${req.path}`)
 })
 

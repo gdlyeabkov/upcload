@@ -51,7 +51,7 @@
                 </span>
               </div>
               <h5 class="card-title" style="display: inline;">{{ file.name }}</h5>
-              <p class="card-text">Последний раз обновлен {{ new Date().toLocaleDateString() }}.</p>
+              <p class="card-text">Последний раз обновлен {{ file.updated }}.</p>
             </div> 
           </div>
         </div>
@@ -80,7 +80,7 @@
     <!-- <div ref="droparea" style="position:fixed; top: 0px; left: 0px; background-color: green; width: 100%; height: 100%; z-index: 20; display: none;" @drop.prevent="drop_handler($event)" @dragenter="dragover_handler($event)"></div> -->
     <div class="createFolderModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
       <div class="alert alert-primary" role="alert" style="min-width: 550px;">
-        <span @click="closeModal($event)" style=" font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
+        <span @click="closeModal($event)" style="color: red; font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
           cancel
         </span>
         <input v-model="folderName" style="max-width: 200px; margin: auto;" type="text" class="form-control" id="folderName" aria-describedby="folderName">
@@ -91,7 +91,7 @@
     </div>
     <div class="fileModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
       <div class="alert alert-primary" role="alert">
-        <span @click="closeModal($event)" style=" font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
+        <span @click="closeModal($event)" style="color: red; font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
           cancel
         </span>
         <h2>
@@ -121,7 +121,7 @@
     </div>
     <div class="fileLinkModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
       <div class="alert alert-primary" role="alert">
-        <span @click="closeModal($event)" style=" font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
+        <span @click="closeModal($event)" style="color: red; font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
           cancel
         </span>
         Сгенерированная ссылка: <br/>
@@ -130,14 +130,14 @@
     </div>
     <div class="filePropsModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
       <div class="alert alert-primary" role="alert">
-        <span @click="closeModal($event)" style=" font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
+        <span @click="closeModal($event)" style="color: red; font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
           cancel
         </span>
         <h2>
           Название файла: {{ currentOpenFile.name }}
         </h2>
         <p>
-          Размер файла: {{ Math.floor(currentOpenFile.size / 1024 / 1024) }} Мб
+          Размер файла: {{ computeSize(currentOpenFile.size) }} {{ computeMeasure(currentOpenFile.size, 0) }}
         </p>
         <p>
           Расположение файла: {{ currentOpenFile.path }}
@@ -148,7 +148,7 @@
         <p>
           Задана ссылка: {{ currentOpenFile.linked }}
         </p>
-        <p>Последний раз обновлен {{ new Date().toLocaleDateString() }}.</p>
+        <p>Последний раз обновлен {{ currentOpenFile.updated }}.</p>
       </div>
     </div>
   </div>
@@ -200,7 +200,9 @@ export default {
     jwt.verify(this.token, 'upcloadsecret', (err, decoded) => {
       if(this.$route.query.redirectroute !== null && this.$route.query.redirectroute !== undefined){
         // логика перенаправления
+        console.log('перенаправления')
         if(this.$route.query.redirectroute.includes('users/login') || this.$route.query.redirectroute.includes('users/register')){
+          console.log('на любой путь')
           this.$router.push({ path: this.$route.query.redirectroute })
         } else if(this.$route.query.redirectroute.includes('links')){
           this.$router.push({ name: "Home", query: { useremail: this.$route.query.owner, path: this.$route.query.path } })
