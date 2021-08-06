@@ -1,4 +1,5 @@
 process.setMaxListeners(1500);
+const { lsDevices } = require('fs-hard-drive')
 const diskinfo = require('diskinfo')
 const serveStatic = require('serve-static')
 const AdmZip = require('adm-zip')
@@ -122,7 +123,11 @@ const UsersSchema = new mongoose.Schema({
     email: String,
     password: String,
     name: String,
-    age: Number
+    age: Number,
+    size: {
+        type: Number,
+        default: 4194304
+    }
 },
 { collection : 'myusers' });
 const UsersModel = mongoose.model('UsersModel', UsersSchema, 'myusers');
@@ -141,22 +146,18 @@ app.get('/home', (req, res)=>{
         if (err){
             return
         }
-        // return res.render('index', { allFiles: allFiles, auth: true, useremail: 'gleb@mail.ru' })
-        return res.json({ allFiles: allFiles, auth: "true", useremail: req.query.useremail })
+        let queryOfUser = UsersModel.findOne({ email: req.query.useremail })
+        queryOfUser.exec((err, user) => {
+            if (err){
+                return
+            }
+            // return res.render('index', { allFiles: allFiles, auth: true, useremail: 'gleb@mail.ru' })
+            return res.json({ allFiles: allFiles, user: user, auth: "true", useremail: req.query.useremail })
+        })
     })
-    
 })
 
-app.post('/files/upload', [(req, res, next) => {
-    console.log('custom middleware')
-    const files = req.files
-
-    if(!files){
-        console.log("Error to upload file ")
-    }
-    console.log("req.files: ", req.files)
-    return next()
-}, upload.array('myFiles', 999)], async (req, res) => {
+app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
@@ -188,6 +189,7 @@ app.post('/files/upload', [(req, res, next) => {
         //     }
         // })
     // }
+    
     let freespace = 0
     diskinfo.getDrives((err, aDrives) => {
         if(err) {
@@ -195,6 +197,22 @@ app.post('/files/upload', [(req, res, next) => {
         }
         freespace = aDrives[0].available
     })
+
+    let totalSize = 0
+    for(let file of req.files){
+        totalSize += file.size
+    }
+    console.log(`totalSize: ${totalSize}`)
+    UsersModel.updateOne({ email: req.query.owner }, 
+        { 
+            "$inc": { "size": -totalSize }
+        }, (err, user) => {
+            if(err){
+                return res.json({ 'status': 'error' })
+            }
+            
+        })
+
 
     return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.owner}&path=${req.query.filepath}&freespace=${freespace}`)
     // return res.redirect(`http://localhost:8080/?useremail=${req.query.owner}&path=${req.query.filepath}&freespace=${freespace}`)
@@ -271,12 +289,19 @@ app.get('/files/delete', (req, res) => {
         }
         return res.json({ 'status': 'OK' })
     } else if(!req.query.fileids.includes(',')){
+        let totalSize = 0
         let queryOfFile = FileModel.findOne({"_id": req.query.fileids })
         queryOfFile.exec((err, file) => {
             if(err){
                 return res.json({ 'status': 'error' })
             }
             if(!file.type.includes('group')){
+                fs.stat(`uploads/${req.query.owner.split('@')[0]}/${file.name}`, (err, stats) => {
+                    if(err){
+                        return res.json({ 'status': 'error' })
+                    }
+                    totalSize += stats.size
+                })
                 fs.unlink(`uploads/${req.query.owner.split('@')[0]}/${file.name}`, (err) => {
                     if(err){
                         return res.json({ 'status': 'error' })
@@ -288,7 +313,15 @@ app.get('/files/delete', (req, res) => {
                 if(err){
                     return res.json({ 'status': 'error' })
                 }
-                return res.json({ 'status': 'OK' })
+                UsersModel.updateOne({ email: req.query.owner }, 
+                { 
+                    "$inc": { "size": totalSize }
+                }, (err, user) => {
+                    if(err){
+                        return res.json({ 'status': 'error' })
+                    }
+                    
+                })
             })
         })
     }
@@ -512,6 +545,20 @@ app.get('/files/downloads', (req, res)=>{
             })
         }
     })
+})
+
+app.get('/diskinfo', (req, res) => {
+    let freespace = 0
+    diskinfo.getDrives((err, aDrives) => {
+        if(err) {
+            freespace = 0
+        }
+        aDrives.map((drive) => {
+            freespace += drive.available
+        })
+    })
+    console.log(`freespace: ${freespace}`)
+    return res.json({ 'freespace': freespace })
 })
 
 app.get('**', (req, res) => {

@@ -56,6 +56,7 @@ export default {
       }
     },
     login(){
+      // fetch(`http://localhost:4000/users/check/?useremail=${this.useremail}&userpassword=${this.userpassword}`, {
       fetch(`https://upcload.herokuapp.com/users/check/?useremail=${this.useremail}&userpassword=${this.userpassword}`, {
       mode: 'cors',
       method: 'GET'

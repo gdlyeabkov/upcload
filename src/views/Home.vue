@@ -7,59 +7,78 @@
       <!-- <iframe class="object" src="./main.txt" width="468" height="60" align="left">
         Ваш браузер не поддерживает плавающие фреймы!
       </iframe> -->
-      <p v-if="path !== 'root'" style="margin-left: 35px; display: inline; cursor: pointer; font-size: 24px; color: rgb(165, 165, 165); font-weight: bold; position: relative; top: 0px; left: 0px; z-index: 2;" @click="previousFolder()">..</p>&nbsp;
-      <p style="display: inline; font-size: 24px; color: rgb(165, 165, 165); position: relative; top: 0px; left: 0px; z-index: 2;">{{ path }}</p>
-      <div v-if="allFiles !== null && allFiles.length !== 0">
-        <div style="position: relative; top: 0px; left: 0px; z-index: 2;" v-for="file in allFiles">
-          <input data-selected="false" type="hidden" :value="file._id">
-          <div @contextmenu="expandSelect($event, file.name, 'right')" @dblclick="changePath($event, file.name, file.type)" @click="expandSelect($event, file.name, 'left')" class="card" style="cursor: pointer; float: left; margin: 5px; width: 350px;  height: 250px; ">
+      <div style="width: 100%;">
+        <div class="freeSpacePanel" style="position: relative; top: 0px; left: 0px; z-index: 2; width: 100%;">
+          <div ref="freeSpacePanel" class="card" style="border-radius: 25px; cursor: pointer; margin: 5px; height: 200px; width: 75%; float: right;">
             <h5 class="card-header" style="overflow: hidden;">
-              <p style="">{{ computeSize(file.size) }} {{ computeMeasure(file.size, 0) }}</p>
-              
-              <!-- <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" /> -->
-              <div v-if="file.type.includes('img')">
-                <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" style="width: 100%; height: 100%;">
-              </div>
-              <div v-else-if="file.type.includes('mp4')">
-                <video autoplay loop style="width: 100%; height: 100%;" controls>
-                  <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`"/>
-                </video>
-              </div>
-              <div v-else-if="file.type.includes('mp3')">
-                <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" controls></audio>
-              </div>
+              <h4 style="position: relative; top: 0px; left: 0px; z-index: 2;">Место на диске: </h4>
             </h5>
             <div class="card-body" style="min-height: 125px;">
-              <div v-if="file.type.includes('group')" style="display: inline;">
-                <span class="material-icons">
-                  folder
-                </span>
-              </div>
-              <div v-else-if="file.type.includes('mp4')" style="display: inline;">
-                <span class="material-icons">
-                  movie
-                </span>
-              </div>
-              <div v-else-if="file.type.includes('img')" style="display: inline;">
-              <span class="material-icons">
-                image
-              </span>
-              </div>
-              <div v-else-if="file.type.includes('mp3')" style="display: inline;">
-                <span class="material-icons">
-                  headphones
-                </span>
-              </div>
-              <h5 class="card-title" style="display: inline;">{{ file.name }}</h5>
-              <div v-if="file !== null && file !== undefined">
-                <p class="card-text">Последний раз обновлен {{ file.updated.toLocaleString() }}.</p>
+              <h5 style="text-align: right; position: relative; top: 0px; left: 0px; z-index: 2;">{{ computeSize(user.size) }}{{ computeMeasure(user.size, 0) }}/4Мб</h5>
+              <div class="progress">
+                <div class="progress-bar bg-success" ref="progressbar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
               </div>
             </div> 
           </div>
-        </div>
+        </div>  
       </div>
-      <div v-else-if="allFiles !== null && allFiles.length === 0">
-        <p @contextmenu="expandSelect($event, 'mockFileName', 'right')" style="position:relative; top: 0px;  left: 0px; z-index: 2; cursor: pointer; text-align: center; font-size: 24px; color: rgb(215, 215, 215)">Вы не загрузили ещё ни 1 файл.</p>
+      <br style="clear: both;"/>
+      <div ref="filePanelList" class="filePanel" style="width: 100%; height: 100%;">
+        <p v-if="path !== 'root'" style="margin-left: 35px; display: inline; cursor: pointer; font-size: 24px; color: rgb(165, 165, 165); font-weight: bold; position: relative; top: 0px; left: 0px; z-index: 2;" @click="previousFolder()">..</p>&nbsp;
+        <p style="display: inline; font-size: 24px; color: rgb(165, 165, 165); position: relative; top: 0px; left: 0px; z-index: 2;">{{ path }}</p>
+        <div v-if="allFiles !== null && allFiles.length !== 0">
+          <div style="position: relative; top: 0px; left: 0px; z-index: 2;" v-for="file in allFiles" :key="file.name">
+            <input data-selected="false" type="hidden" :value="file._id">
+            <div @contextmenu="expandSelect($event, file.name, 'right')" @dblclick="changePath($event, file.name, file.type)" @click="expandSelect($event, file.name, 'left')" class="card" style="cursor: pointer; float: left; margin: 5px; width: 275px;  height: 250px;">
+              <h5 class="my-card-header card-header" style="overflow: hidden;">
+                <p style="">{{ computeSize(file.size) }} {{ computeMeasure(file.size, 0) }}</p>
+                
+                <!-- <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" /> -->
+                <div v-if="file.type.includes('img')">
+                  <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" @error="$event.target.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'" style="width: 100%; height: 100%;">
+                </div>
+                <div v-else-if="file.type.includes('mp4')">
+                  <video autoplay loop style="width: 100%; height: 100%;" controls>
+                    <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`"/>
+                  </video>
+                </div>
+                <div v-else-if="file.type.includes('mp3')">
+                  <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" controls></audio>
+                </div>
+              </h5>
+              <div class="my-card-body" style="min-height: 125px;">
+                <div v-if="file.type.includes('group')" style="display: inline;">
+                  <span class="material-icons">
+                    folder
+                  </span>
+                </div>
+                <div v-else-if="file.type.includes('mp4')" style="display: inline;">
+                  <span class="material-icons">
+                    movie
+                  </span>
+                </div>
+                <div v-else-if="file.type.includes('img')" style="display: inline;">
+                <span class="material-icons">
+                  image
+                </span>
+                </div>
+                <div v-else-if="file.type.includes('mp3')" style="display: inline;">
+                  <span class="material-icons">
+                    headphones
+                  </span>
+                </div>
+                <h5 class="card-title" style="display: inline;">{{ file.name }}</h5>
+                <div v-if="file !== null && file !== undefined">
+                  <p class="card-text">Последний раз обновлен {{ file.updated.toLocaleString() }}.</p>
+                </div>
+              </div> 
+            </div>
+          </div>
+        </div>
+        <div v-else-if="allFiles !== null && allFiles.length === 0">
+          <p @contextmenu="expandSelect($event, 'mockFileName', 'right')" style="position:relative; top: 0px;  left: 0px; z-index: 2; cursor: pointer; text-align: center; font-size: 24px; color: rgb(215, 215, 215)">Вы не загрузили ещё ни 1 файл.</p>
+        </div>
+        <br style="clear: both;"/>
       </div>
       <br style="clear: both;"/>
       <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`https://confirmed-giant-utahraptor.glitch.me/files/upload/?filepath=${path}&owner=${useremail}`">
@@ -101,7 +120,7 @@
         </h2>
         
           <div v-if="currentOpenFile.type.includes('img')" style="display: flex; justify-content: center;">
-            <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}&useremail=${useremail}`" style="width: 50%; height: 100%;">
+            <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}&useremail=${useremail}`" @error="$event.target.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'" style="width: 50%; height: 100%;">
           </div>
           <div v-else-if="currentOpenFile.type.includes('mp4')" style="display: flex; justify-content: center;">
             <video autoplay loop style="width: 50%; height: 100%;" controls>
@@ -176,6 +195,8 @@ export default {
   name: 'Home',
   data(){
     return {
+      freeSpaceSize: 0,
+      freeSpaceMeasure: "Кб",
       allFiles: [],
       selection: [],
       contextWindow: null,
@@ -192,6 +213,9 @@ export default {
       },
       token: '',
       useremail: '',
+      user: {
+        size: 100
+      },
       freeSpace: 157286400,
       filesList: [],
       componentHeight: 0
@@ -261,7 +285,25 @@ export default {
         })
         .then(result => {
           console.log(JSON.parse(result))
-          // this.freeSpace = this.$route.query.freespace
+          this.user = JSON.parse(result).user
+          
+          // setTimeout(() => {
+          //   let filePanelListHeight = this.$refs.filePanelList.getBoundingClientRect().height + this.$refs.filePanelList.getBoundingClientRect().bottom
+          //   console.log(`filePanelListHeight: ${filePanelListHeight}`)
+          //   this.$refs.freeSpacePanel.style.height = `${filePanelListHeight}px`
+          // }, 3000)
+          if(Number(this.user.size) === 4194304){
+            this.$refs.progressbar.style.width = "100%"
+          } else if(Number(this.user.size) < 4194304 && Number(this.user.size) >= 4194304 / 100 * 75){
+            this.$refs.progressbar.style.width = "75%"
+          } else if(Number(this.user.size) < 4194304 / 100 * 75 && Number(this.user.size) >= 4194304 / 100 * 50){
+            this.$refs.progressbar.style.width = "50%"
+          } else if(Number(this.user.size) < 4194304 / 100 * 50 && Number(this.user.size) >= 4194304 / 100 * 25){
+            this.$refs.progressbar.style.width = "25%"
+          } else if(Number(this.user.size) < 4194304 / 100 * 25){
+            this.$refs.progressbar.style.width = "0%"
+          }
+          
           this.allFiles = JSON.parse(result).allFiles.filter(file => {
             if(this.$route.query.path !== null && this.$route.query.path !== undefined){
               if(file.path === this.$route.query.path){
@@ -414,7 +456,7 @@ export default {
     },
     clearSelection(event) {
       this.selection = []
-      document.querySelectorAll('.card-header').forEach(element => {
+      document.querySelectorAll('.my-card-header').forEach(element => {
         element.parentNode.previousElementSibling.setAttribute('data-selected', "false")
         element.parentNode.classList -= `text-white bg-info`
         element.parentNode.classList += ` card`
@@ -466,7 +508,7 @@ export default {
         if(event.target.parentNode.previousElementSibling.getAttribute('data-selected').includes("false")){
           //добавляем выделение
           if((event.target.parentNode.previousElementSibling.getAttribute('data-selected').includes("false") && !event.ctrlKey)){
-            for(let card of document.querySelectorAll('.card-body')){
+            for(let card of document.querySelectorAll('.my-card-body')){
               card.parentNode.classList -= ` text-white bg-info`
               card.parentNode.classList += ` card`
               card.parentNode.previousElementSibling.setAttribute('data-selected', "false")
@@ -553,6 +595,7 @@ export default {
 
                     } else if(event.target.textContent.includes("Удалить")){
                       console.log('this.selection.join(,): ', this.selection.join(','))
+                      // fetch(`http://localhost:4000/files/delete/?fileids=${this.selection.join(',')}&owner=${this.useremail}`, {
                       fetch(`https://upcload.herokuapp.com/files/delete/?fileids=${this.selection.join(',')}&owner=${this.useremail}`, {
                         mode: 'cors',
                         method: 'GET'
