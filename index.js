@@ -100,7 +100,10 @@ const FileSchema = new mongoose.Schema({
         enum: [ 'group', 'mp4', 'img', 'mp3' ],
         default: "group"
     },
-    size: Number,
+    size: {
+        type: Number,
+        default: 0
+    },
     content: [mongoose.Schema.Types.Map],
     linked: {
         type: String,
