@@ -11,6 +11,7 @@ const path = require('path')
 const app = express()
 
 const multer  = require('multer')
+var newfiles = []
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, `uploads/${req.query.owner.split('@')[0]}/`)
@@ -41,6 +42,7 @@ const storage = multer.diskStorage({
                             if(err){
                                 return res.json({ "status": "error" })
                             }
+                            newfiles.push(changedFileName)
                         })
                         cb(null, changedFileName) 
                     }
@@ -57,6 +59,7 @@ const storage = multer.diskStorage({
                         if(err){
                             return res.json({ "status": "error" })
                         }
+                        newfiles.push(changedFileName)
                     })
                     cb(null, changedFileName)
                 }  
@@ -168,8 +171,9 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
     if(!files){
         console.log("Error to upload file ")
     }
-    
-    // for(let file of req.files){
+    let fileIndex = -1
+    for(let file of req.files){
+        fileIndex++
     //     let fileType = "img"
     //     if(file.mimetype.includes("img")){
     //         fileType = "img"
@@ -183,12 +187,14 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
         //         return res.json({ "status": "error" })
         //     }
         // })
-        // await new FileModel({ name: file.filename, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
-        //     if(err){
-        //         return res.json({ "status": "error" })
-        //     }
-        // })
-    // }
+        FileModel.updateOne({ name: newFiles[fileIndex] }, 
+        { 
+            "size": file.size
+        }, (err, user) => {
+            if(err){
+                return res.json({ "status": "error" })
+            }
+        })
     
     let freespace = 0
     diskinfo.getDrives((err, aDrives) => {

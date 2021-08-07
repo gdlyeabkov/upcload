@@ -256,12 +256,14 @@ export default {
           event.preventDefault()
         })
         document.body.addEventListener("keyup", (event) => {
-          this.showFileModal(event, false)
-          this.deleteFile(event)
-          this.makeDir(event)
-          this.makeLink(event)
-          this.properties(event)
-          this.downloadFile(event)
+          if(document.querySelector('.fileLinkModal').style.display.includes('none') && document.querySelector('.filePropsModal').style.display.includes('none') && document.querySelector('.createFolderModal').style.display.includes('none') && document.querySelector('.fileModal').style.display.includes('none')){
+            this.showFileModal(event, false)
+            this.deleteFile(event)
+            this.makeDir(event)
+            this.makeLink(event)
+            this.properties(event)
+            this.downloadFile(event)
+          }
         })
 
         if(this.$route.query.path !== null && this.$route.query.path !== undefined){
@@ -409,7 +411,7 @@ export default {
           }
           return false
         })[0]
-        window.location = `https://confirmed-giant-utahraptor.glitch.me/files/downloads/?useremail=${this.useremail}&filename=${currentOpenFile.name}&filepath=${this.path + '/' + currentOpenFile.name}`
+        window.location = `https://confirmed-giant-utahraptor.glitch.me/files/downloads/?useremail=${this.useremail}&filename=${this.currentOpenFile.name}&filepath=${this.path + '/' + this.currentOpenFile.name}`
       }
       
     },
