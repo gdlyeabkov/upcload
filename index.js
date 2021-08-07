@@ -218,8 +218,8 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
             }
             
         })
-
-
+    }
+    newfiles = []
     return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.owner}&path=${req.query.filepath}&search=`)
     // return res.redirect(`http://localhost:8080/?useremail=${req.query.owner}&path=${req.query.filepath}&search=`)
 
