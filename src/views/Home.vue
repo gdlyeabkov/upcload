@@ -443,13 +443,14 @@ export default {
       for(let file of this.$refs.fileUploader.files){
         totalSize += file.size
       }
-      // if(totalSize <= this.freeSpace){
-        document.querySelector('.formOfUploadedFiles').method = "POST"
-        setTimeout(() => {
+      setTimeout(() => {
+        if(totalSize <= this.user.size){
+          document.querySelector('.formOfUploadedFiles').method = "POST"
           document.querySelector('.formOfUploadedFiles').submit()
-        }, 2000)
-      // }
-      
+        } else if(totalSize > this.user.size){
+          console.log("в вашем аккаунте нет больше доступного места")
+        }
+      }, 2000)
     },
     closeModal(event){
       event.target.parentNode.parentNode.style.display = "none"
@@ -494,10 +495,12 @@ export default {
             totalSize += file.size
           }
           setTimeout(() => {
-            // if(totalSize <= this.freeSpace){
+            if(totalSize <= this.user.size){
               document.querySelector('.formOfUploadedFiles').method = "POST"
               document.querySelector('.formOfUploadedFiles').submit()
-            // }
+            } else if(totalSize > this.user.size){
+              console.log("в вашем аккаунте нет больше доступного места")
+            }
           }, 2000)
         } else {
           console.log('Вы пытаетесь загрузить файлы с не подходящим расширением')
