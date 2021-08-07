@@ -22,6 +22,7 @@ const storage = multer.diskStorage({
         function dontRepeatFilesNames(changedFileName) {
             indexOfCalls++
             let filesInDir = []
+            console.log('file: ', file)
             fs.readdir(`./uploads/${req.query.owner.split('@')[0]}/`, (err, userFiles) => {
                 filesInDir = userFiles
                 if(filesInDir.length >= 1){
@@ -36,7 +37,6 @@ const storage = multer.diskStorage({
                         } else if(file.mimetype.includes("audio")){
                             fileType = "mp3"
                         }
-                        console.log('file: ', file)
                         new FileModel({ name: changedFileName, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
                             if(err){
                                 return res.json({ "status": "error" })
@@ -163,11 +163,11 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
     res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
 
-    // const files = req.files
+    const files = req.files
 
-    // if(!files){
-    //     console.log("Error to upload file ")
-    // }
+    if(!files){
+        console.log("Error to upload file ")
+    }
     
     // for(let file of req.files){
     //     let fileType = "img"
@@ -214,8 +214,8 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
         })
 
 
-    return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.owner}&path=${req.query.filepath}&freespace=${freespace}`)
-    // return res.redirect(`http://localhost:8080/?useremail=${req.query.owner}&path=${req.query.filepath}&freespace=${freespace}`)
+    return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.owner}&path=${req.query.filepath}&search=`)
+    // return res.redirect(`http://localhost:8080/?useremail=${req.query.owner}&path=${req.query.filepath}&search=`)
 
 })
 
@@ -422,7 +422,7 @@ app.get('/files/allocate', (req, res) => {
             freespace = aDrives[0].available
         })
         // return res.json({ 'status': "OK" })
-        return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.useremail}&path=root&freespace=${freespace}`)
+        return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.useremail}&path=root&search=`)
         // return res.redirect(`https://upcload.herokuapp.com/users/login`)
 
     })
@@ -575,14 +575,14 @@ app.get('**', (req, res) => {
         queryOfFile.exec((err, file) => {
             if (err){
                 // return res.redirect(`http://localhost:8081/?redirectroute=${req.path}`)
-                return res.redirect(`/?owner=${file.owner}&path=${file.path}&redirectroute=https://upcload.herokuapp.com${req.path}`)
+                return res.redirect(`/?owner=${file.owner}&path=${file.path}&search=&redirectroute=https://upcload.herokuapp.com${req.path}`)
             }
             // return res.redirect(`http://localhost:8081/?redirectroute=http://localhost:8081${req.path}&owner=${file.owner}&path=${file.path}`, 300)
-            return res.redirect(`/?owner=${file.owner}&path=${file.path}&redirectroute=https://upcload.herokuapp.com${req.path}`)
+            return res.redirect(`/?owner=${file.owner}&path=${file.path}&search=&redirectroute=https://upcload.herokuapp.com${req.path}`)
         })
     }
     // return res.redirect(`http://localhost:8081/?redirectroute=${req.path}`)
-    return res.redirect(`/?owner=${file.owner}&path=${file.path}&redirectroute=https://upcload.herokuapp.com${req.path}`)
+    return res.redirect(`/?owner=${file.owner}&path=${file.path}&search=&redirectroute=https://upcload.herokuapp.com${req.path}`)
 })
 
 const port = process.env.PORT || 8080

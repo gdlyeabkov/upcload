@@ -11,10 +11,12 @@
                 </div>
             </div>
             <div v-if="auth">
-                <span @click="logout()" style="cursor: pointer;" class="material-icons">
+                <span @click="logout()" style="cursor: pointer;" class="material-icons btn btn-danger">
                     meeting_room
                 </span>
-                {{ user }}
+                <span style="font-weight: bold; color: rgb(215, 215, 215); text-shadow: 0px  0px  2px rgb(115, 115, 115)">
+                    {{ user }}
+                </span>
             </div>
         </div>
     </nav>    

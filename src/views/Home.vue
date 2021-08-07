@@ -7,6 +7,12 @@
       <!-- <iframe class="object" src="./main.txt" width="468" height="60" align="left">
         Ваш браузер не поддерживает плавающие фреймы!
       </iframe> -->
+      <div style="width: 75%; position: relative; top: 0px; left: 0px; z-index: 2; display: flex; justify-content: center; margin: 15px auto;">
+        <input type="search" id="inputPassword5" class="form-control" aria-describedby="searchHelpBlock" placeholder="Найдите своё..." v-model="searchkwrds" />
+        <span style="cursor:pointer; margin: 10px;" class="btn btn-danger material-icons" @click="searchFiles()">
+          search
+        </span>
+      </div>
       <div style="width: 100%;">
         <div class="freeSpacePanel" style="position: relative; top: 0px; left: 0px; z-index: 2; width: 100%;">
           <div ref="freeSpacePanel" class="card" style="border-radius: 25px; cursor: pointer; margin: 5px; height: 200px; width: 75%; float: right;">
@@ -16,7 +22,7 @@
             <div class="card-body" style="min-height: 125px;">
               <h5 style="text-align: right; position: relative; top: 0px; left: 0px; z-index: 2;">{{ computeSize(user.size) }}{{ computeMeasure(user.size, 0) }}/4Мб</h5>
               <div class="progress">
-                <div class="progress-bar bg-success" ref="progressbar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                <div :class="`progress-bar bg-${levelOfFreeSpace}`" ref="progressbar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
               </div>
             </div> 
           </div>
@@ -35,7 +41,7 @@
                 
                 <!-- <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" /> -->
                 <div v-if="file.type.includes('img')">
-                  <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" @error="$event.target.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'" style="width: 100%; height: 100%;">
+                  <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`"  @error="$event.target.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'" style="width: 100%; height: 100%;">
                 </div>
                 <div v-else-if="file.type.includes('mp4')">
                   <video autoplay loop style="width: 100%; height: 100%;" controls>
@@ -195,6 +201,8 @@ export default {
   name: 'Home',
   data(){
     return {
+      levelOfFreeSpace: "success",
+      searchkwrds: '',
       freeSpaceSize: 0,
       freeSpaceMeasure: "Кб",
       allFiles: [],
@@ -286,19 +294,24 @@ export default {
         .then(result => {
           console.log(JSON.parse(result))
           this.user = JSON.parse(result).user
-          
+          console.log(`usersize: ${this.user.size}`)
+          console.log(`NAN: ${ this.computeSize(this.user.size)}`)
           // setTimeout(() => {
           //   let filePanelListHeight = this.$refs.filePanelList.getBoundingClientRect().height + this.$refs.filePanelList.getBoundingClientRect().bottom
           //   console.log(`filePanelListHeight: ${filePanelListHeight}`)
           //   this.$refs.freeSpacePanel.style.height = `${filePanelListHeight}px`
           // }, 3000)
           if(Number(this.user.size) === 4194304){
+            this.levelOfFreeSpace = "success"
             this.$refs.progressbar.style.width = "100%"
           } else if(Number(this.user.size) < 4194304 && Number(this.user.size) >= 4194304 / 100 * 75){
+            this.levelOfFreeSpace = "info"
             this.$refs.progressbar.style.width = "75%"
           } else if(Number(this.user.size) < 4194304 / 100 * 75 && Number(this.user.size) >= 4194304 / 100 * 50){
+            this.levelOfFreeSpace = "warning"
             this.$refs.progressbar.style.width = "50%"
           } else if(Number(this.user.size) < 4194304 / 100 * 50 && Number(this.user.size) >= 4194304 / 100 * 25){
+            this.levelOfFreeSpace = "danger"
             this.$refs.progressbar.style.width = "25%"
           } else if(Number(this.user.size) < 4194304 / 100 * 25){
             this.$refs.progressbar.style.width = "0%"
@@ -317,11 +330,22 @@ export default {
               return false
             }
           })
+          if(this.$route.query.search.length >= 1){
+            this.allFiles = this.allFiles.filter(file => {
+              if(file.name.includes(this.$route.query.search)){
+                return true
+              }
+              return false
+            })
+          }
         });
       }
     })
   },
   methods: {
+    searchFiles(){
+      window.location = `/?useremail=${this.useremail}&path=${this.path}&search=${this.searchkwrds}`
+    },
     openpanel(){
       window.showOpenFilePicker({     
         types: [
@@ -353,9 +377,9 @@ export default {
       let cursor = cursorOfMeasure
       cursor++
       console.log('cursor: ', cursor)
-      if(Math.floor(size / 1024) > 1){
+      if(Math.ceil(size / 1024) > 1){
         return this.computeMeasure(size / 1024, cursor)
-      } else if(Math.floor(size / 1024) <= 1){
+      } else if(Math.ceil(size / 1024) <= 1){
           console.log('----------------------------------------')
           if(cursor === 1){
             return "б"
@@ -370,10 +394,10 @@ export default {
       }
     },
     computeSize (size)  {
-      if(Math.floor(size / 1024) > 1){
+      if(Math.ceil(size / 1024) > 1){
         return this.computeSize(size / 1024)
-      } else if((size / 1024) <= 1){
-        return Math.floor(size)
+      } else if(Math.ceil(size / 1024) <= 1){
+        return Math.ceil(size)
       }
     },
     showFileModal(event, free){
@@ -448,6 +472,7 @@ export default {
           document.querySelector('.formOfUploadedFiles').method = "POST"
           document.querySelector('.formOfUploadedFiles').submit()
         } else if(totalSize > this.user.size){
+          // M.toast({html: 'в вашем аккаунте нет больше доступного места!'})
           console.log("в вашем аккаунте нет больше доступного места")
         }
       }, 2000)
@@ -503,6 +528,7 @@ export default {
             }
           }, 2000)
         } else {
+          // M.toast({html: 'в вашем аккаунте нет больше доступного места!'})
           console.log('Вы пытаетесь загрузить файлы с не подходящим расширением')
         }
     },
@@ -519,7 +545,7 @@ export default {
             this.selection = []
           }
           event.target.parentNode.classList += ` text-white bg-info`
-          event.target.parentNode.style = `cursor: pointer; margin: 5px; border: 1px solid rgb(190, 190, 190); border-radius: 5px; float: left;  width: 350px;  height: 250px;`
+          event.target.parentNode.style = `cursor: pointer; margin: 5px; border: 1px solid rgb(190, 190, 190); border-radius: 5px; float: left;  width: 275px;  height: 250px;`
           event.target.parentNode.previousElementSibling.setAttribute('data-selected', "true")
           this.selection.push(event.target.parentNode.previousElementSibling.value)
         } else if(event.target.parentNode.previousElementSibling.getAttribute('data-selected').includes("true")){
