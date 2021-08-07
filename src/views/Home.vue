@@ -257,6 +257,11 @@ export default {
         })
         document.body.addEventListener("keyup", (event) => {
           this.showFileModal(event, false)
+          this.deleteFile(event)
+          this.makeDir(event)
+          this.makeLink(event)
+          this.properties(event)
+          this.downloadFile(event)
         })
 
         if(this.$route.query.path !== null && this.$route.query.path !== undefined){
@@ -343,6 +348,76 @@ export default {
     })
   },
   methods: {
+    makeLink(event){
+      if(this.selection.length === 1 && event.code == 'KeyL'){
+        document.querySelector('.fileLinkModal').style.display = `flex`
+        this.currentOpenFile = this.allFiles.filter(file => {
+          if(this.selection[0] === file._id){
+            return true
+          }
+          return false
+        })
+        fetch(`https://upcload.herokuapp.com/files/generatelink/?fileid=${this.selection[0]}`, {
+          mode: 'cors',
+          method: 'GET'
+        }).then(response => response.body).then(rb  => {
+            const reader = rb.getReader()
+            return new ReadableStream({
+            start(controller) {
+                function push() {
+                reader.read().then( ({done, value}) => {
+                    if (done) {
+                        console.log('done', done);
+                        controller.close();
+                        return;
+                    }
+                    controller.enqueue(value);
+                    console.log(done, value);
+                    push();
+                })
+                }
+                push();
+            }
+            });
+        }).then(stream => {
+            return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+        })
+        .then(result => {
+          console.log("JSON.parse(result): ", JSON.parse(result))
+          console.log("this.currentOpenFile: ", this.currentOpenFile)
+          this.currentOpenFile[0].link = JSON.parse(result).link
+          this.currentOpenFile = this.currentOpenFile[0]
+        })
+      }
+    },
+    properties(event){
+      if(this.selection.length === 1 && event.code === 'KeyP'){
+        this.currentOpenFile = this.allFiles.filter((file) => {
+          if(file._id === this.selection[0]){
+            return true
+          }
+          return false
+        })[0]
+        document.querySelector('.filePropsModal').style.display = `flex`
+      }
+    },
+    downloadFile(event){
+      if(this.selection.length === 1 && event.code === 'KeyD'){
+        this.currentOpenFile = this.allFiles.filter((file) => {
+          if(file._id === this.selection[0]){
+            return true
+          }
+          return false
+        })[0]
+        window.location = `https://confirmed-giant-utahraptor.glitch.me/files/downloads/?useremail=${this.useremail}&filename=${currentOpenFile.name}&filepath=${this.path + '/' + currentOpenFile.name}`
+      }
+      
+    },
+    makeDir(event){
+      if(event.code == 'KeyM'){
+        document.querySelector('.createFolderModal').style.display = `flex`
+      }
+    },
     searchFiles(){
       window.location = `/?useremail=${this.useremail}&path=${this.path}&search=${this.searchkwrds}`
     },
@@ -400,8 +475,41 @@ export default {
         return Math.ceil(size)
       }
     },
+    deleteFile(event){
+      if(this.selection.length >= 1 && event.code === 'Delete'){
+        fetch(`https://upcload.herokuapp.com/files/delete/?fileids=${this.selection.join(',')}&owner=${this.useremail}`, {
+          mode: 'cors',
+          method: 'GET'
+        }).then(response => response.body).then(rb  => {
+            const reader = rb.getReader()
+            return new ReadableStream({
+            start(controller) {
+                function push() {
+                reader.read().then( ({done, value}) => {
+                    if (done) {
+                        console.log('done', done);
+                        controller.close();
+                        return;
+                    }
+                    controller.enqueue(value);
+                    console.log(done, value);
+                    push();
+                })
+                }
+                push();
+            }
+            });
+        }).then(stream => {
+            return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
+        })
+        .then(result => {
+          console.log(JSON.parse(result))
+          window.location.reload()
+        })
+      }
+    },
     showFileModal(event, free){
-      if(this.selection.length >= 1 && ((event.code == 'NumpadEnter' || event.code == 'Enter') || free)){
+      if(this.selection.length === 1 && ((event.code == 'NumpadEnter' || event.code == 'Enter') || free)){
         document.querySelector('.fileModal').style.display = `flex`
         this.currentOpenFile = this.allFiles.filter(file => {
           if(file._id === this.selection[0]){

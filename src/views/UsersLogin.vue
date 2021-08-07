@@ -6,9 +6,14 @@
         <img src="../assets/cloudnew.png" width="30%" height="30%" alt="">
         <h1 class="h3 mb-3 font-weight-normal">Войдите</h1>
         <label for="inputEmail" class="sr-only">Email</label>
-        <input v-model="useremail" type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
+        <input v-model="useremail" type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="" style="margin: 5px;">
         <label for="inputPassword" class="sr-only">Password</label>
-        <input v-model="userpassword" type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+        <div style="display: flex;">
+          <input ref="passwordfield" v-model="userpassword" type="password" id="inputPassword" class="form-control" placeholder="Password" required=""/>
+          <span ref="visibilitybtn" style="margin: 5px; cursor: pointer;" class="material-icons" @click="toggleVisibility()">
+            visibility
+          </span>
+        </div>
         <div class="checkbox mb-3">
         </div>
         <button class="btn btn-lg btn-primary btn-block loginBtn" @click="login()">Войти</button>
@@ -47,6 +52,15 @@ export default {
     }
   },
   methods:{
+    toggleVisibility(){
+      if(this.$refs.passwordfield.type.includes("text")){
+        this.$refs.passwordfield.type = "password"
+        this.$refs.visibilitybtn.textContent = "visibility"
+      } else {
+        this.$refs.passwordfield.type = "text"
+        this.$refs.visibilitybtn.textContent = "visibility_off"
+      }
+    },
     goToPage(page){
       console.log('goto')
       if(page.includes('register')){

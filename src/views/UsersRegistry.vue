@@ -9,7 +9,12 @@
         <label for="inputEmail" class="sr-only">Email</label>
         <input v-model="useremail" type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
         <label for="inputPassword" class="sr-only">Password</label>
-        <input v-model="userpassword" type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+        <div style="display: flex;">
+          <input ref="passwordfield" v-model="userpassword" type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+          <span ref="visibilitybtn" style="margin: 5px; cursor: pointer;" class="material-icons" @click="toggleVisibility()">
+            visibility
+          </span>
+        </div>
         <label for="inputEmail" class="sr-only">Name</label>
         <input  v-model="username" type="text" id="inputEmail" class="form-control" placeholder="Name" required="" autofocus="">
         <label for="inputEmail" class="sr-only">Age</label>
@@ -49,6 +54,15 @@ export default {
     console.log('this.componentHeight: ', this.componentHeight)
   },
   methods:{
+    toggleVisibility(){
+      if(this.$refs.passwordfield.type.includes("text")){
+        this.$refs.passwordfield.type = "password"
+        this.$refs.visibilitybtn.textContent = "visibility"
+      } else {
+        this.$refs.passwordfield.type = "text"
+        this.$refs.visibilitybtn.textContent = "visibility_off"
+      }
+    },
     goToPage(page){
       if(page.includes('home')){
         this.$router.push({ name: 'Home', query: { path: 'root' } })
