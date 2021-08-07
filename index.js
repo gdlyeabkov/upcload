@@ -195,10 +195,10 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
             "size": file.size
         }, (err, user) => {
             if(err){
-                return res.json({ "status": "error" })
+                
             }
         })
-    
+    }
     let freespace = 0
     diskinfo.getDrives((err, aDrives) => {
         if(err) {
@@ -216,12 +216,11 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
         { 
             "$inc": { "size": -totalSize }
         }, (err, user) => {
-            if(err){
-                return res.json({ 'status': 'error' })
-            }
-            
-        })
-    }
+        if(err){
+            return res.json({ 'status': 'error' })
+        }
+        
+    })
     newfiles = []
     return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.owner}&path=${req.query.filepath}&search=`)
     // return res.redirect(`http://localhost:8080/?useremail=${req.query.owner}&path=${req.query.filepath}&search=`)
