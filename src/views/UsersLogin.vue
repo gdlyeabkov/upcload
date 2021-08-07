@@ -38,18 +38,12 @@ export default {
       userpassword: '',
       errors: "",
       token: '',
-      freespace: 0,
       componentHeight: 0
     }
   },
   mounted(){
     this.componentHeight = document.querySelector('.componentHeight').getBoundingClientRect().bottom
     console.log('this.componentHeight: ', this.componentHeight)
-    if(this.$route.query.freespace === undefined || this.$route.query.freespace === null){
-      this.freespace = 104857600
-    } else {
-      this.freespace = this.$route.query.freespace
-    }
   },
   methods:{
     toggleVisibility(){
@@ -104,7 +98,7 @@ export default {
               useremail: this.useremail
               }, 'upcloadsecret', { expiresIn: '5m' })
             localStorage.setItem('upcloadsecret', this.token)
-            this.$router.push({ 'name': "Home", query: { "useremail": this.useremail, "path": "root", "freespace": this.freespace } })
+            this.$router.push({ 'name': "Home", query: { "useremail": this.useremail, "path": "root", "search": "" } })
           } else if(JSON.parse(result).status.includes("Error")){
             this.errors = "Такого пользователя не существует!!!"
           }

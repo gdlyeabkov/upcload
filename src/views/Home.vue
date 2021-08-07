@@ -224,7 +224,6 @@ export default {
       user: {
         size: 100
       },
-      freeSpace: 157286400,
       filesList: [],
       componentHeight: 0
     }
@@ -233,7 +232,6 @@ export default {
     this.componentHeight = document.querySelector('.componentHeight').getBoundingClientRect().bottom
     console.log('this.componentHeight: ', this.componentHeight)
     this.token = window.localStorage.getItem("upcloadsecret")
-    this.freeSpace = this.$route.query.freespace
     jwt.verify(this.token, 'upcloadsecret', (err, decoded) => {
       if(this.$route.query.redirectroute !== null && this.$route.query.redirectroute !== undefined){
         // логика перенаправления
@@ -244,12 +242,12 @@ export default {
         } else if(this.$route.query.redirectroute.includes('links')){
           this.$router.push({ name: "Home", query: { useremail: this.$route.query.owner, path: this.$route.query.path } })
         } else if(!this.$route.query.redirectroute.includes('users/login') && !this.$route.query.redirectroute.includes('users/register')){
-          this.$router.push({ name: "Home", query: { useremail: decoded.useremail, path: 'root', freespace: this.freeSpace } })
+          this.$router.push({ name: "Home", query: { useremail: decoded.useremail, path: 'root', search: '' } })
         }
       } else { 
         // логика домашней страницы
         if(err){
-          this.$router.push({ name: 'UsersLogin', query: { freeSpace: this.freespace } })
+          this.$router.push({ name: 'UsersLogin' })
         }
         this.useremail = decoded.useremail
         window.addEventListener("contextmenu", (event) => {
@@ -529,7 +527,7 @@ export default {
     previousFolder(){
       let previousDir = this.path.split('/')
       previousDir.pop()
-      this.$router.push({ name: 'Home', query: { path: previousDir.join('/'), useremail: this.useremail, freeSpace: this.freeSpace } })
+      this.$router.push({ name: 'Home', query: { path: previousDir.join('/'), useremail: this.useremail, search: "" } })
       window.location.reload()
     },
     createFolder(){
@@ -566,7 +564,7 @@ export default {
     },
     changePath(event, folderName, fileType){
       if(fileType.includes("group")){
-        this.$router.push({ name: 'Home', query:{ path: `${this.path}/${folderName}`, useremail: this.useremail, freeSpace: this.freeSpace } })
+        this.$router.push({ name: 'Home', query:{ path: `${this.path}/${folderName}`, useremail: this.useremail, search: "" } })
         window.location.reload()
       } else if(!fileType.includes("group")){
         this.showFileModal(event, true)

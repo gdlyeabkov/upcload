@@ -17,6 +17,7 @@ const storage = multer.diskStorage({
       cb(null, `uploads/${req.query.owner.split('@')[0]}/`)
     },
     filename: function (req, file, cb) {
+        console.log('step2')
         // cb(null, file.originalname)
 
         let indexOfCalls = 0
@@ -38,11 +39,11 @@ const storage = multer.diskStorage({
                         } else if(file.mimetype.includes("audio")){
                             fileType = "mp3"
                         }
+                        newfiles.push(changedFileName)
                         new FileModel({ name: changedFileName, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
                             if(err){
-                                return res.json({ "status": "error" })
+                                // return res.json({ "status": "error" })
                             }
-                            newfiles.push(changedFileName)
                         })
                         cb(null, changedFileName) 
                     }
@@ -55,11 +56,11 @@ const storage = multer.diskStorage({
                     } else if(file.mimetype.includes("audio")){
                         fileType = "mp3"
                     }
+                    newfiles.push(changedFileName)
                     new FileModel({ name: changedFileName, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
                         if(err){
-                            return res.json({ "status": "error" })
+                            // return res.json({ "status": "error" })
                         }
-                        newfiles.push(changedFileName)
                     })
                     cb(null, changedFileName)
                 }  
@@ -170,13 +171,15 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
 
     const files = req.files
-
+    console.log(`newfiles: ${newfiles.length}`)
     if(!files){
         console.log("Error to upload file ")
     }
+    console.log('step1')
     let fileIndex = -1
     for(let file of req.files){
         fileIndex++
+        console.log(`newfiles: ${newfiles[fileIndex]}`)
     //     let fileType = "img"
     //     if(file.mimetype.includes("img")){
     //         fileType = "img"
@@ -190,7 +193,7 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
         //         return res.json({ "status": "error" })
         //     }
         // })
-        FileModel.updateOne({ name: newFiles[fileIndex] }, 
+        FileModel.updateOne({ "name": newfiles[fileIndex] }, 
         { 
             "size": file.size
         }, (err, user) => {

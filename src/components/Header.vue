@@ -27,15 +27,12 @@ export default {
     props: [ "auth", "user" ],
     data(){
         return {
-            token: '',
-            freeSpace: 0
+            token: ''
         }
     },
     mounted(){
         this.token = window.localStorage.getItem("upcloadsecret")
-        if(this.$route.query.freespace !== null && this.$route.query.freespace !== undefined){
-            this.freeSpace = this.$route.query.freespace
-        }
+        
     },
     methods: {
         logout(){
@@ -48,7 +45,7 @@ export default {
             console.log('goto')
             if(page.includes('home')){
                 jwt.verify(this.token, 'upcloadsecret', (err, decoded) => {
-                    this.$router.push({ name: 'Home', query: { path: 'root', useremail: decoded.useremail, freespace: this.freeSpace } })
+                    this.$router.push({ name: 'Home', query: { path: 'root', useremail: decoded.useremail, search: "" } })
                     window.location.reload()
                 })
             } else if(page.includes('register')){
