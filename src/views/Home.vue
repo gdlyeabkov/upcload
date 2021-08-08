@@ -152,7 +152,7 @@
           cancel
         </span>
         Сгенерированная ссылка: <br/>
-        <a :href="`https://upcload.herokuapp.com/links/?owner=${currentOpenFile.owner}&path=${currentOpenFile.path}&filename=${currentOpenFile.name}&link=${currentOpenFile.link}`">{{ currentOpenFile.link }}</a>
+        <a :href="`https://upcload.herokuapp.com/links/?owner=${currentOpenFile.owner}&path=${currentOpenFile.path}&filename=${currentOpenFile.name}&link=${currentOpenFile.link}`">{{ `https://upcload.herokuapp.com/links/?owner=${currentOpenFile.owner}&path=${currentOpenFile.path}&filename=${currentOpenFile.name}&link=${currentOpenFile.link}` }}</a>
       </div>
     </div>
     <div class="filePropsModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
