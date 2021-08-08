@@ -152,7 +152,7 @@
           cancel
         </span>
         Сгенерированная ссылка: <br/>
-        <a :href="currentOpenFile.link">{{ currentOpenFile.link }}</a>
+        <a :href="`https://upcload.herokuapp.com/links/?owner=${currentOpenFile.owner}&path=${currentOpenFile.path}&filename=${currentOpenFile.name}&link=${currentOpenFile.link}`">{{ currentOpenFile.link }}</a>
       </div>
     </div>
     <div class="filePropsModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
@@ -239,8 +239,14 @@ export default {
         if(this.$route.query.redirectroute.includes('users/login') || this.$route.query.redirectroute.includes('users/register')){
           console.log('на любой путь')
           this.$router.push({ path: this.$route.query.redirectroute })
-        } else if(this.$route.query.redirectroute.includes('links')){
-          this.$router.push({ name: "Home", query: { useremail: this.$route.query.owner, path: this.$route.query.path } })
+        } else if(this.$route.query.redirectroute.includes('link')){
+          if(this.$route.query.crossredirect !== null && this.$route.query.crossredirect !== undefined){
+            this.$router.push({ name: 'UsersLogin', query: { filename: this.$route.query.filename, useremail: this.$route.query.useremail, path: this.$route.query.path } })
+          } else if(this.$route.query.crossredirect === undefined && this.$route.query.crossredirect === null){
+            console.log("перенаправляю на пользовательскую ссылку")
+            console.log(`this.$route.query.filename: ${this.$route.query.filename}`)
+            this.$router.push({ name: "Home", query: { useremail: this.$route.query.owner, path: this.$route.query.path, filename: this.$route.query.filename, search: '' } })
+          }
         } else if(!this.$route.query.redirectroute.includes('users/login') && !this.$route.query.redirectroute.includes('users/register')){
           this.$router.push({ name: "Home", query: { useremail: decoded.useremail, path: 'root', search: '' } })
         }
@@ -255,7 +261,7 @@ export default {
         })
         document.body.addEventListener("keyup", (event) => {
           if(document.querySelector('.fileLinkModal').style.display.includes('none') && document.querySelector('.filePropsModal').style.display.includes('none') && document.querySelector('.createFolderModal').style.display.includes('none') && document.querySelector('.fileModal').style.display.includes('none')){
-            this.showFileModal(event, false)
+            this.showFileModal(event, false, false, '')
             this.deleteFile(event)
             this.makeDir(event)
             this.makeLink(event)
@@ -297,6 +303,7 @@ export default {
           return new Response(stream, { headers: { "Content-Type": "text/html" } }).text();
         })
         .then(result => {
+
           console.log(JSON.parse(result))
           this.user = JSON.parse(result).user
           console.log(`usersize: ${this.user.size}`)
@@ -343,6 +350,11 @@ export default {
               return false
             })
           }
+
+          if(this.$route.query.filename !== null && this.$route.query.filename !== undefined){
+            this.showFileModal(this.$event, true, true, this.$route.query.filename)
+          }
+
         });
       }
     })
@@ -357,6 +369,7 @@ export default {
           }
           return false
         })
+        // fetch(`http://localhost:4000/files/generatelink/?fileid=${this.selection[0]}`, {
         fetch(`https://upcload.herokuapp.com/files/generatelink/?fileid=${this.selection[0]}`, {
           mode: 'cors',
           method: 'GET'
@@ -472,7 +485,8 @@ export default {
       if(Math.ceil(size / 1024) > 1){
         return this.computeSize(size / 1024)
       } else if(Math.ceil(size / 1024) <= 1){
-        return Math.ceil(size)
+        // return Math.ceil(size)
+        return size.toFixed(2);
       }
     },
     deleteFile(event){
@@ -508,11 +522,22 @@ export default {
         })
       }
     },
-    showFileModal(event, free){
-      if(this.selection.length === 1 && ((event.code == 'NumpadEnter' || event.code == 'Enter') || free)){
+    showFileModal(event, free, startup, filename){
+      if(!startup) {
+        if(this.selection.length === 1 && ((event.code == 'NumpadEnter' || event.code == 'Enter') || free)){
+          document.querySelector('.fileModal').style.display = `flex`
+          this.currentOpenFile = this.allFiles.filter(file => {
+            if(file._id === this.selection[0]){
+              return true
+            }
+            return false
+          })[0]
+          console.log("this.currentOpenFile: ", this.currentOpenFile)
+        }
+      } else if(startup) {
         document.querySelector('.fileModal').style.display = `flex`
         this.currentOpenFile = this.allFiles.filter(file => {
-          if(file._id === this.selection[0]){
+          if(file.name === filename){
             return true
           }
           return false
@@ -567,7 +592,7 @@ export default {
         this.$router.push({ name: 'Home', query:{ path: `${this.path}/${folderName}`, useremail: this.useremail, search: "" } })
         window.location.reload()
       } else if(!fileType.includes("group")){
-        this.showFileModal(event, true)
+        this.showFileModal(event, true, false, '')
       }
     },
     uploadFiles(event) {
@@ -725,7 +750,7 @@ export default {
                 menuItemTool.addEventListener("click", (event) => {
                     console.log('event.target: ', event.target.textContent)
                     if(event.target.textContent.includes("Открыть")){
-                      this.showFileModal(event, true)
+                      this.showFileModal(event, true, false, '')
                     } else if(event.target.textContent.includes("Создать папку")){
                       document.querySelector('.createFolderModal').style.display = `flex`
                     } else if(event.target.textContent.includes("Открыть")){
@@ -779,6 +804,7 @@ export default {
                           }
                           return false
                         })
+                        // fetch(`http://localhost:4000/files/generatelink/?fileid=${this.selection[0]}`, {
                         fetch(`https://upcload.herokuapp.com/files/generatelink/?fileid=${this.selection[0]}`, {
                           mode: 'cors',
                           method: 'GET'

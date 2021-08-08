@@ -460,14 +460,15 @@ app.get('/files/generatelink', async (req, res)=>{
     let query = FileModel.findOneAndUpdate({ _id: req.query.fileid }, {
         $set: {
             "linked": "true",
-            "link": `https://upcload.herokuapp.com/links/${encodedLink}`
+            "link": `link${encodedLink}`
         }
     })
     query.exec((err, file) => {
         if(err){
             return res.json({ 'status': "error" })
         }
-        return res.json({ 'status': "OK", "link": `https://upcload.herokuapp.com/links/${encodedLink}` })
+        console.log(`link: link${encodedLink}`)
+        return res.json({ 'status': "OK", "link": `link${encodedLink}` })
     })
 })
 
@@ -574,26 +575,21 @@ app.get('/diskinfo', (req, res) => {
 
 app.get('**', (req, res) => {
     
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-    
     console.log('redirect')
     console.log('req.path: ', req.path)
-    if(req.path.includes('links')){
-        let queryOfFile = FileModel.find({ 'link': req.query.path })
+    if(req.path.includes('link')){
+        let queryOfFile = FileModel.findOne({ 'link': req.query.link })
         queryOfFile.exec((err, file) => {
             if (err){
-                // return res.redirect(`http://localhost:8081/?redirectroute=${req.path}`)
-                return res.redirect(`/?owner=${file.owner}&path=${file.path}&search=&redirectroute=https://upcload.herokuapp.com${req.path}`)
+                // return res.redirect(`http://localhost:4000/?useremail=${file.owner}&path=${file.path}&filename=${file.name}&crossredirect=asdzxc&redirectroute=${req.query.link}`)
+                return res.redirect(`/?useremail=${file.owner}&path=${file.path}&filename=${file.name}&crossredirect=asdzxc&redirectroute=${req.query.link}&search=`)
             }
-            // return res.redirect(`http://localhost:8081/?redirectroute=http://localhost:8081${req.path}&owner=${file.owner}&path=${file.path}`, 300)
-            return res.redirect(`/?owner=${file.owner}&path=${file.path}&search=&redirectroute=https://upcload.herokuapp.com${req.path}`)
+            // return res.redirect(`http://localhost:4000/?useremail=${file.owner}&path=${file.path}&filename=${file.name}&crossredirect=asdzxc&redirectroute=${req.query.link}`)
+            return res.redirect(`/?useremail=${file.owner}&path=${file.path}&filename=${file.name}&crossredirect=asdzxc&redirectroute=${req.query.link}&search=`)
         })
     }
-    // return res.redirect(`http://localhost:8081/?redirectroute=${req.path}`)
-    return res.redirect(`/?owner=${file.owner}&path=${file.path}&search=&redirectroute=https://upcload.herokuapp.com${req.path}`)
+    // return res.redirect(`http://localhost:8080/?owner=${'file.owner'}&path=${'file.path'}&filename=${'file.name'}&redirectroute=${req.query.link}`)
+    // return res.redirect(`/?owner=${file.owner}&path=${file.path}&filename=${file.name}&search=&redirectroute=${req.path}`)
 })
 
 const port = process.env.PORT || 8080

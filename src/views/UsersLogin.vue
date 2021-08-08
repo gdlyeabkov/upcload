@@ -42,6 +42,11 @@ export default {
     }
   },
   mounted(){
+    
+    if(this.$route.query.filename !== null && this.$route.query.filename !== undefined){
+      this.$router.push({ name: 'Home', query: { useremail: this.$route.query.useremail, path: this.$route.query.path, filename: this.$route.query.filename, search: '' } })
+    }
+
     this.componentHeight = document.querySelector('.componentHeight').getBoundingClientRect().bottom
     console.log('this.componentHeight: ', this.componentHeight)
   },
