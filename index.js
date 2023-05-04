@@ -1,5 +1,5 @@
+const baseUrl = 'https://almondine-concrete-rubidium.glitch.me'
 process.setMaxListeners(1500);
-const { lsDevices } = require('fs-hard-drive')
 const diskinfo = require('diskinfo')
 const serveStatic = require('serve-static')
 const AdmZip = require('adm-zip')
@@ -17,9 +17,6 @@ const storage = multer.diskStorage({
       cb(null, `uploads/${req.query.owner.split('@')[0]}/`)
     },
     filename: function (req, file, cb) {
-        console.log('step2')
-        // cb(null, file.originalname)
-
         let indexOfCalls = 0
         function dontRepeatFilesNames(changedFileName) {
             indexOfCalls++
@@ -41,9 +38,6 @@ const storage = multer.diskStorage({
                         }
                         newfiles.push(changedFileName)
                         new FileModel({ name: changedFileName, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
-                            if(err){
-                                // return res.json({ "status": "error" })
-                            }
                         })
                         cb(null, changedFileName) 
                     }
@@ -58,9 +52,6 @@ const storage = multer.diskStorage({
                     }
                     newfiles.push(changedFileName)
                     new FileModel({ name: changedFileName, size: file.size, type: fileType, path: req.query.filepath, owner: req.query.owner }).save(function (err) {
-                        if(err){
-                            // return res.json({ "status": "error" })
-                        }
                     })
                     cb(null, changedFileName)
                 }  
@@ -155,10 +146,9 @@ app.get('/home', (req, res)=>{
         }
         let queryOfUser = UsersModel.findOne({ email: req.query.useremail })
         queryOfUser.exec((err, user) => {
-            if (err){
+            if (err) {
                 return
             }
-            // return res.render('index', { allFiles: allFiles, auth: true, useremail: 'gleb@mail.ru' })
             return res.json({ allFiles: allFiles, user: user, auth: "true", useremail: req.query.useremail })
         })
     })
@@ -179,20 +169,6 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
     let fileIndex = -1
     for(let file of req.files){
         fileIndex++
-        console.log(`newfiles: ${newfiles[fileIndex]}`)
-    //     let fileType = "img"
-    //     if(file.mimetype.includes("img")){
-    //         fileType = "img"
-    //     } else if(file.mimetype.includes("mp4")){
-    //         fileType = "mp4"
-    //     } else if(file.mimetype.includes("audio")){
-    //         fileType = "mp3"
-    //     }
-        // fs.rename(`./uploads/${file.filename}`, `./uploads/${req.query.owner.split('@')[0]}/${file.filename}`, (err, file) => {
-        //     if(err) {
-        //         return res.json({ "status": "error" })
-        //     }
-        // })
         FileModel.updateOne({ "name": newfiles[fileIndex] }, 
         { 
             "size": file.size
@@ -226,7 +202,6 @@ app.post('/files/upload', upload.array('myFiles', 999), async (req, res) => {
     })
     newfiles = []
     return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.owner}&path=${req.query.filepath}&search=`)
-    // return res.redirect(`http://localhost:8080/?useremail=${req.query.owner}&path=${req.query.filepath}&search=`)
 
 })
 
@@ -244,37 +219,6 @@ app.get('/files/delete', (req, res) => {
     res.setHeader("Access-Control-Allow-Headers", "X-Requested-With, X-Access-Token, X-Socket-ID, Content-Type");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
 
-    // let fileids = req.query.fileids.split(',')
-    // let countOfFiles = fileids.length
-    // console.log('fileids: ', fileids)
-    // for(let fileIndex = 0; fileIndex < countOfFiles; fileIndex++){
-    //     let queryOfFile = FileModel.findOne({"_id": fileids[fileIndex] })
-    //     queryOfFile.exec((err, file) => {
-    //         if(!file.type.includes('group')){
-    //             console.log("file: ", file)
-    //             if(err){
-    //                 return res.json({ 'status': 'error' })
-    //             }
-    //             fs.unlink(`uploads/${req.query.owner.split('@')[0]}/${file.name}`, (err) => {
-    //                 if(err) {
-    //                     return res.json({ 'status': 'error' })
-    //                 }
-    //             })  
-    //         }
-    //     })
-    // }
-    // let query = FileModel.find({ })
-    // query.exec((err, allFiles) => {
-    //     let queryOfDelete = FileModel.deleteMany({ "_id": { $in: fileids } })
-    //     queryOfDelete.exec((err, data) => {
-    //         if(err){
-    //             return res.json({ 'status': 'error' })
-    //         }
-    //         return res.json({ 'allFiles': allFiles })
-    //     })
-    // })
-
-    console.log('req.query.fileids.split(,): ', req.query.fileids.split(','))
     if(req.query.fileids.includes(',')){
         for(let fileId of req.query.fileids.split(',')){
             let queryOfFile = FileModel.findOne({"_id": fileId })
@@ -402,19 +346,12 @@ app.get('/users/usercreatesuccess', async (req, res)=>{
                 if(err){
                     return res.json({ 'status': "error" })
                 } else {
-                    return res.redirect(`https://confirmed-giant-utahraptor.glitch.me/files/allocate/?useremail=${req.query.useremail}`)
-                    // return res.json({ 'status': "OK" })
+                    return res.redirect(`${baseUrl}/files/allocate/?useremail=${req.query.useremail}`)
                 }
             });
         }
     });
     
-    // query.exec((err, product) => {
-    //     if (err){
-    //         return
-    //     }
-    // });
-
 })
 
 app.get('/files/allocate', (req, res) => {
@@ -432,10 +369,7 @@ app.get('/files/allocate', (req, res) => {
         diskinfo.getDrives((err, aDrives) => {
             freespace = aDrives[0].available
         })
-        // return res.json({ 'status': "OK" })
         return res.redirect(`https://upcload.herokuapp.com/?useremail=${req.query.useremail}&path=root&search=`)
-        // return res.redirect(`https://upcload.herokuapp.com/users/login`)
-
     })
 })
 
@@ -545,15 +479,6 @@ app.get('/files/downloads', (req, res)=>{
                     }, 10000)
                 }, 2000)
                 
-                // await res.download(path.join(__dirname, `uploads/${req.query.useremail.split('@')[0]}/${req.query.filename}.zip`), `${req.query.filename}.zip`, function (err) {
-                //     if (err) {
-                //         //error to download file
-                //         return res.json({ "status": "error to download file" })
-                //     } else {
-                //         //file success download
-                //         return res.json({ "status": "file success download" })
-                //     }
-                // })
             })
         }
     })
@@ -580,18 +505,13 @@ app.get('**', (req, res) => {
     if(req.path.includes('link')){
         let queryOfFile = FileModel.findOne({ 'link': req.query.link })
         queryOfFile.exec((err, file) => {
-            if (err){
-                // return res.redirect(`http://localhost:4000/?useremail=${file.owner}&path=${file.path}&filename=${file.name}&crossredirect=asdzxc&redirectroute=${req.query.link}`)
+            if (err) {
                 return res.redirect(`/?useremail=${file.owner}&path=${file.path}&filename=${file.name}&crossredirect=asdzxc&redirectroute=${req.query.link}&search=`)
             }
-            // return res.redirect(`http://localhost:4000/?useremail=${file.owner}&path=${file.path}&filename=${file.name}&crossredirect=asdzxc&redirectroute=${req.query.link}`)
             return res.redirect(`/?useremail=${file.owner}&path=${file.path}&filename=${file.name}&crossredirect=asdzxc&redirectroute=${req.query.link}&search=`)
         })
     }
-    // return res.redirect(`http://localhost:8080/?owner=${'file.owner'}&path=${'file.path'}&filename=${'file.name'}&redirectroute=${req.query.link}`)
-    // return res.redirect(`/?owner=${file.owner}&path=${file.path}&filename=${file.name}&search=&redirectroute=${req.path}`)
 })
 
 const port = process.env.PORT || 8080
-// const port = 4000
 app.listen(port)

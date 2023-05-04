@@ -2,11 +2,6 @@
   <div class="app">
     <div class="componentHeight">
       <Header :auth="true" :user="useremail"/>
-      <!-- возможно файлы не до конца принадлежит определенному пользователю -->
-      <!-- <object class="object" data="https://mercurial-diagnostic-glazer.glitch.me/pictures/getpicture?picturename=gleb" width="400" height="300">{{ content }}</object> -->
-      <!-- <iframe class="object" src="./main.txt" width="468" height="60" align="left">
-        Ваш браузер не поддерживает плавающие фреймы!
-      </iframe> -->
       <div style="width: 75%; position: relative; top: 0px; left: 0px; z-index: 2; display: flex; justify-content: center; margin: 15px auto;">
         <input type="search" id="inputPassword5" class="form-control" aria-describedby="searchHelpBlock" placeholder="Найдите своё..." v-model="searchkwrds" />
         <span style="cursor:pointer; margin: 10px;" class="btn btn-danger material-icons" @click="searchFiles()">
@@ -38,18 +33,16 @@
             <div @contextmenu="expandSelect($event, file.name, 'right')" @dblclick="changePath($event, file.name, file.type)" @click="expandSelect($event, file.name, 'left')" class="card" style="cursor: pointer; float: left; margin: 5px; width: 275px;  height: 250px;">
               <h5 class="my-card-header card-header" style="overflow: hidden;">
                 <p style="">{{ computeSize(file.size) }} {{ computeMeasure(file.size, 0) }}</p>
-                
-                <!-- <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" /> -->
                 <div v-if="file.type.includes('img')">
-                  <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`"  @error="$event.target.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'" style="width: 100%; height: 100%;">
+                  <img :src="`${baseUrl}/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`"  @error="$event.target.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'" style="width: 100%; height: 100%;">
                 </div>
                 <div v-else-if="file.type.includes('mp4')">
                   <video autoplay loop style="width: 100%; height: 100%;" controls>
-                    <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`"/>
+                    <source :src="`${baseUrl}/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`"/>
                   </video>
                 </div>
                 <div v-else-if="file.type.includes('mp3')">
-                  <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" controls></audio>
+                  <audio :src="`${baseUrl}/files/getpreview?previewname=${file.name}&filetype=${file.type}&useremail=${useremail}`" controls></audio>
                 </div>
               </h5>
               <div class="my-card-body" style="min-height: 125px;">
@@ -87,8 +80,7 @@
         <br style="clear: both;"/>
       </div>
       <br style="clear: both;"/>
-      <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`https://confirmed-giant-utahraptor.glitch.me/files/upload/?filepath=${path}&owner=${useremail}`">
-      <!-- <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`http://localhost:4000/files/upload/?filepath=${path}&owner=${useremail}`"> -->
+      <form class="formOfUploadedFiles" enctype="multipart/form-data"  method="POST" :action="`${baseUrl}/files/upload/?filepath=${path}&owner=${useremail}`">
         <input style="display: none;" id="filename" type="text" name="name" />
         <input style="display: none;" id="filesize" type="number" name="size" />
         <input style="display: none;" id="filetype" type="text" name="type" />
@@ -96,15 +88,10 @@
           cloud_upload
         </label>
         <input accept=".png" name="myFiles" ref="fileUploader" @click.prevent="openpanel()" style="display: none;" id="fileuploader" type="file" multiple />
-        <!-- <input accept="image/png, video/mp4, audio/mp3," name="myFiles" ref="fileUploader" @change="uploadFiles($event)" style="display: none;" id="fileuploader" type="file" multiple /> -->
       </form>
     </div>
     <Footer :componentHeight="componentHeight"/>
-    
     <div @drop.prevent="drop_handler($event)" @dragenter="dragover_handler($event)" @click="clearSelection($event)" class="workSpace" style="width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: 1;"></div>
-    <!-- <div @dragenter="dragover_handler($event)" @click="clearSelection($event)" class="workSpace" style="width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgb(235, 235, 235); box-shadow: inset 0px 0px 85px rgb(135, 135, 135); z-index: -5;"></div> -->
-
-    <!-- <div ref="droparea" style="position:fixed; top: 0px; left: 0px; background-color: green; width: 100%; height: 100%; z-index: 20; display: none;" @drop.prevent="drop_handler($event)" @dragenter="dragover_handler($event)"></div> -->
     <div class="createFolderModal" style="display: none; flex-direction: row; justify-content: center; align-items: center; width:100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(0, 0, 0, 0.7); z-index: 5;">
       <div class="alert alert-primary" role="alert" style="min-width: 550px;">
         <span @click="closeModal($event)" style="color: red; font-size: 56px; cursor:pointer; position: fixed; top: 0px; left: calc(100% - 5%)" class="material-icons">
@@ -126,15 +113,15 @@
         </h2>
         
           <div v-if="currentOpenFile.type.includes('img')" style="display: flex; justify-content: center;">
-            <img :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}&useremail=${useremail}`" @error="$event.target.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'" style="width: 50%; height: 100%;">
+            <img :src="`${baseUrl}/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}&useremail=${useremail}`" @error="$event.target.src='https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'" style="width: 50%; height: 100%;">
           </div>
           <div v-else-if="currentOpenFile.type.includes('mp4')" style="display: flex; justify-content: center;">
             <video autoplay loop style="width: 50%; height: 100%;" controls>
-              <source :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}&useremail=${useremail}`"/>
+              <source :src="`${baseUrl}/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}&useremail=${useremail}`"/>
             </video>
           </div>
           <div v-else-if="currentOpenFile.type.includes('mp3')" style="display: flex; justify-content: center;">
-            <audio :src="`https://confirmed-giant-utahraptor.glitch.me/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}&useremail=${useremail}`" controls></audio>
+            <audio :src="`${baseUrl}/files/getpreview?previewname=${currentOpenFile.name}&filetype=${currentOpenFile.type}&useremail=${useremail}`" controls></audio>
           </div>
         
         
@@ -184,11 +171,6 @@
 </template>
 
 <script>
-// for(element of document.querySelector('*')){
-//   element.addEventListener('drop', (dropEvent) => {
-//     dropEvent.preventDefault()
-//   })
-// }
 document.addEventListener('dragover', (dragEvent) => {
   dragEvent.preventDefault()
 })
@@ -196,6 +178,8 @@ document.addEventListener('dragover', (dragEvent) => {
 import * as jwt from 'jsonwebtoken'
 import Footer from '@/components/Footer.vue'
 import Header from '@/components/Header.vue'
+
+const baseUrl = process.env.VUE_APP_BASE_URL
 
 export default {
   name: 'Home',
@@ -277,7 +261,6 @@ export default {
         }
         
         fetch(`https://upcload.herokuapp.com/home/?useremail=${decoded.useremail}`, {
-        // fetch(`http://localhost:4000/home/?useremail=${decoded.useremail}`, {
           mode: 'cors',
           method: 'GET'
         }).then(response => response.body).then(rb  => {
@@ -308,11 +291,6 @@ export default {
           this.user = JSON.parse(result).user
           console.log(`usersize: ${this.user.size}`)
           console.log(`NAN: ${ this.computeSize(this.user.size)}`)
-          // setTimeout(() => {
-          //   let filePanelListHeight = this.$refs.filePanelList.getBoundingClientRect().height + this.$refs.filePanelList.getBoundingClientRect().bottom
-          //   console.log(`filePanelListHeight: ${filePanelListHeight}`)
-          //   this.$refs.freeSpacePanel.style.height = `${filePanelListHeight}px`
-          // }, 3000)
           if(Number(this.user.size) === 4194304){
             this.levelOfFreeSpace = "success"
             this.$refs.progressbar.style.width = "100%"
@@ -369,7 +347,6 @@ export default {
           }
           return false
         })
-        // fetch(`http://localhost:4000/files/generatelink/?fileid=${this.selection[0]}`, {
         fetch(`https://upcload.herokuapp.com/files/generatelink/?fileid=${this.selection[0]}`, {
           mode: 'cors',
           method: 'GET'
@@ -422,7 +399,7 @@ export default {
           }
           return false
         })[0]
-        window.location = `https://confirmed-giant-utahraptor.glitch.me/files/downloads/?useremail=${this.useremail}&filename=${this.currentOpenFile.name}&filepath=${this.path + '/' + this.currentOpenFile.name}`
+        window.location = `${baseUrl}/files/downloads/?useremail=${this.useremail}&filename=${this.currentOpenFile.name}&filepath=${this.path + '/' + this.currentOpenFile.name}`
       }
       
     },
@@ -454,7 +431,6 @@ export default {
           this.filesList.push(await file.getFile())
         }
         console.log('this.filesList: ', this.filesList)
-        // this.$refs.fileUploader.files = this.filesList
         this.$refs.fileUploader.files = new FileListItems(
           this.filesList
         )
@@ -482,10 +458,9 @@ export default {
       }
     },
     computeSize (size)  {
-      if(Math.ceil(size / 1024) > 1){
+      if (Math.ceil(size / 1024) > 1) {
         return this.computeSize(size / 1024)
       } else if(Math.ceil(size / 1024) <= 1){
-        // return Math.ceil(size)
         return size.toFixed(2);
       }
     },
@@ -546,8 +521,7 @@ export default {
       }
     },
     download(event, fileName){
-      window.location = `https://confirmed-giant-utahraptor.glitch.me/files/downloads/?useremail=${this.useremail}&filename=${fileName}&filepath=${this.path + '/' + fileName}`
-      // window.location = `http://localhost:4000/files/downloads/?useremail=${this.useremail}&filename=${fileName}&filepath=${this.path + '/' + fileName}`
+      window.location = `${baseUrl}/files/downloads/?useremail=${this.useremail}&filename=${fileName}&filepath=${this.path + '/' + fileName}`
     },
     previousFolder(){
       let previousDir = this.path.split('/')
@@ -605,7 +579,6 @@ export default {
           document.querySelector('.formOfUploadedFiles').method = "POST"
           document.querySelector('.formOfUploadedFiles').submit()
         } else if(totalSize > this.user.size){
-          // M.toast({html: 'в вашем аккаунте нет больше доступного места!'})
           console.log("в вашем аккаунте нет больше доступного места")
         }
       }, 2000)
@@ -633,17 +606,12 @@ export default {
       this.$refs.cloud.style.fontSize = '256px'
       this.$refs.cloud.style.top = 'calc(100% - 35%)'
       this.$refs.cloud.style.left = 'calc(100% - 25%)'
-
-      // this.$refs.droparea.style.display = "none"
-
     },
     drop_handler(event){
-      // event.preventDefault()
       this.$refs.cloud.style.fontSize = '124px'
       this.$refs.cloud.style.top = 'calc(100% - 25%)'
       this.$refs.cloud.style.left = 'calc(100% - 15%)'
       console.log('event.dataTransfer.files: ', event.dataTransfer.files)
-      // this.$refs.droparea.style.display = "none"
         if(Array.from(event.dataTransfer.files).every((file, fileIndex, fileList) => {
         return file.type.includes('png') || file.type.includes('mp4') || file.type.includes('mp3')})){
           console.log("все файлы подходят")
@@ -661,7 +629,6 @@ export default {
             }
           }, 2000)
         } else {
-          // M.toast({html: 'в вашем аккаунте нет больше доступного места!'})
           console.log('Вы пытаетесь загрузить файлы с не подходящим расширением')
         }
     },
@@ -687,7 +654,6 @@ export default {
           event.target.parentNode.classList -= ` text-white bg-info`
           event.target.parentNode.classList += ` card`
           event.target.parentNode.previousElementSibling.setAttribute('data-selected', "false")
-          //selection.pop(event.target.parentNode.previousElementSibling.value)
           
           let counter = 0
           this.selection.splice(this.selection.findIndex((el, idx, arr) => {
@@ -757,7 +723,6 @@ export default {
 
                     } else if(event.target.textContent.includes("Удалить")){
                       console.log('this.selection.join(,): ', this.selection.join(','))
-                      // fetch(`http://localhost:4000/files/delete/?fileids=${this.selection.join(',')}&owner=${this.useremail}`, {
                       fetch(`https://upcload.herokuapp.com/files/delete/?fileids=${this.selection.join(',')}&owner=${this.useremail}`, {
                         mode: 'cors',
                         method: 'GET'
@@ -786,13 +751,6 @@ export default {
                       .then(result => {
                         console.log(JSON.parse(result))
                         window.location.reload()
-                        // this.allFiles = JSON.parse(result).allFiles.filter(file => {
-                        //   if(file.path === this.path){
-                        //     return true
-                        //   } else if(this.path !== file.path){
-                        //     return false
-                        //   }
-                        // })
                       })
                     } else if(event.target.textContent.includes("Скачать")){
                       this.download(event, fileName)
@@ -804,7 +762,6 @@ export default {
                           }
                           return false
                         })
-                        // fetch(`http://localhost:4000/files/generatelink/?fileid=${this.selection[0]}`, {
                         fetch(`https://upcload.herokuapp.com/files/generatelink/?fileid=${this.selection[0]}`, {
                           mode: 'cors',
                           method: 'GET'
@@ -835,7 +792,6 @@ export default {
                           console.log("this.currentOpenFile: ", this.currentOpenFile)
                           this.currentOpenFile[0].link = JSON.parse(result).link
                           this.currentOpenFile = this.currentOpenFile[0]
-                          // window.location.reload()  
                         })
                     } else if(event.target.textContent.includes("Свойства")){
                         this.currentOpenFile = this.allFiles.filter((file) => {
@@ -860,16 +816,6 @@ export default {
     Header
   }
 }
-
-// function drop_handler(event){
-//   event.preventDefault()
-//   console.log("drop_handler")
-//   console.log("event: ", this.$event)
-//   console.log("event.dataTransfer.items: ", this.$event.dataTransfer.items)
-//   console.log("event.dataTransfer: ", this.$event.dataTransfer)
-//   document.querySelector('.formOfUploadedFiles').method = "POST"
-//   document.querySelector('.formOfUploadedFiles').submit()
-// }
 
 function FileListItems(files){
   var b = new ClipboardEvent("").clipboardData || new DataTransfer()

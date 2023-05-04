@@ -74,7 +74,6 @@ export default {
     },
     register(){
       fetch(`https://upcload.herokuapp.com/users/usercreatesuccess/?useremail=${this.useremail}&userpassword=${this.userpassword}&username=${this.username}&userage=${this.userage}`, {
-      // fetch(`http://localhost:4000/users/usercreatesuccess/?useremail=${this.useremail}&userpassword=${this.userpassword}&username=${this.username}&userage=${this.userage}`, {
         mode: 'cors',
         method: 'GET'
       }).then(response => response.body).then(rb  => {
